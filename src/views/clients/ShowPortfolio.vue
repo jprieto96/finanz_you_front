@@ -1,0 +1,345 @@
+<template>
+  <div id="portfolio" v-if="showView">
+    <div id="head">
+      <b-row>
+        <b-col lg="4" class="pb-2"><b-button id="buttonaddValues" v-b-modal.modal-lg variant="primary">Añadir valores</b-button>
+          <b-modal id="modal-lg" size="lg" title="Añadir valores" hide-footer>
+            <b-form @submit="onSubmit" @reset="onReset">
+              <b-form-group
+                  id="input-group-1"
+                  label="ISIN/Nombre:"
+                  label-for="input-1"
+              >
+                <b-form-input
+                    v-model="form.nombre_ISIN"
+                    id="inputsymbol"
+                    :state="ISINState"
+                    v-on:keyup="keyListener"
+                    list="my-list-id"
+                    required></b-form-input>
+                <datalist id="my-list-id">
+                  <option v-for="(value, index) in values" v-bind:key="index">{{ value.symbol + " - " + value.name}}</option>
+                </datalist>
+                <b-form-invalid-feedback>
+                  Introduce un Nombre/ISIN válido
+                </b-form-invalid-feedback>
+              </b-form-group>
+
+              <b-form-group
+                  id="input-group-3"
+                  label="Cantidad:"
+                  label-for="input-3"
+              >
+                <b-form-input
+                    v-model="form.quantity"
+                    id="inputQuantity" type="number"
+                    step="1"
+                    min="1"
+                    :state="quantityState"
+                    required></b-form-input>
+                <b-form-invalid-feedback>
+                  Introduce una cantidad mayor que 0
+                </b-form-invalid-feedback>
+              </b-form-group>
+              <b-form-group
+                  id="input-group-4"
+                  label="Precio de compra:"
+                  label-for="input-4"
+              >
+                <b-form-input
+                    v-model="form.buyPrice"
+                    id="inputBuyPrice"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    :state="buyPriceState"
+                    required></b-form-input>
+                <b-form-invalid-feedback>
+                  Introduce un precio de compra mayor que 0
+                </b-form-invalid-feedback>
+              </b-form-group>
+              <b-form-group
+                  id="input-group-5"
+                  label="Comisión:"
+                  label-for="input-5"
+              >
+                <b-form-input
+                    v-model="form.commision"
+                    id="inputComision"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    :state="commissionState"
+                    required></b-form-input>
+                <b-form-invalid-feedback>
+                  Introduce una comisión mayor o igual que 0
+                </b-form-invalid-feedback>
+              </b-form-group>
+              <b-form-group
+                  id="input-group-6"
+                  label="Fecha de la compra:"
+                  label-for="input-6"
+              >
+                <b-form-datepicker
+                    v-model="form.date"
+                    id="datepicker"
+                    class="mb-2"
+                    :state="dateState"
+                    required></b-form-datepicker>
+                <b-form-invalid-feedback>
+                  Introduce una fecha válida
+                </b-form-invalid-feedback>
+              </b-form-group>
+              <br>
+              <div>
+                <b-button class="formButton" type="reset">Reset</b-button>
+                <b-button class="formButton" variant="primary" type="submit">Enviar</b-button>
+              </div>
+            </b-form>
+          </b-modal>
+        </b-col>
+        <b-col lg="4" class="pb-2"><h1>Portfolio</h1></b-col>
+        <b-col lg="4" class="pb-2"></b-col>
+      </b-row>
+    </div>
+    <br>
+    <b-table-simple striped hover outlined responsive class="table">
+      <b-thead>
+      <b-tr>
+        <b-th scope="col">Nombre</b-th>
+        <b-th scope="col">Ticker/ISIN</b-th>
+        <b-th scope="col">Cantidad</b-th>
+        <b-th scope="col">Último precio</b-th>
+        <b-th scope="col">Valor mercado</b-th>
+        <b-th scope="col">Valor mercado (EUR)</b-th>
+        <b-th scope="col">GyP hoy</b-th>
+        <b-th scope="col">% hoy</b-th>
+        <b-th scope="col">Precio medio de compra</b-th>
+      </b-tr>
+      </b-thead>
+      <b-tbody>
+      <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
+        <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
+        <b-td>{{ index }}</b-td>
+        <b-td>{{ item.quantity }}</b-td>
+        <b-td>{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
+        <b-td>{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
+        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
+        <b-td class="gypgreen" v-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) > 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
+        <b-td v-else-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) == 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
+        <b-td class="gypred" v-else>{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
+        <b-td class="gypgreen" v-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent > 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
+        <b-td v-else-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent == 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
+        <b-td class="gypred" v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
+        <b-td>{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
+      </b-tr>
+      </b-tbody>
+    </b-table-simple>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+
+
+export default {
+  name: "ShowPortfolio",
+  data(){
+      return{
+        info : null,
+        form: {
+          nombre_ISIN: '',
+          quantity: 0,
+          buyPrice: 0,
+          date: null,
+          commision: 0
+        },
+        infoFinances: {},
+        showView : false,
+        transactionDate: '',
+        modal: {
+          title: '',
+          message: '',
+          variant: '',
+        },
+        values: [],
+        renderFinished: false
+      }
+  },
+  computed: {
+
+    ISINState() {
+      return this.form.nombre_ISIN.length > 0
+    },
+    quantityState() {
+      return this.form.quantity > 0
+    },
+    buyPriceState() {
+      return this.form.buyPrice > 0
+    },
+    commissionState() {
+      return this.form.commision >= 0
+    },
+    dateState() {
+      let currentTime = new Date()
+      return this.form.date != null && this.form.date <= currentTime.toDateString()
+    }
+  },
+  created() {
+    if(this.$cookies.get("Session") == null) {
+      window.location.href = '/login'
+    }
+    else {
+      this.getData()
+    }
+  },
+
+  methods: {
+    getData(){
+      let hashClient = this.$cookies.get("Session")
+      axios
+          .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
+          .then(response => {
+            this.info = response.data;
+            this.financialData();
+          })
+          .catch(err => {
+            this.showWarningModal(err.response.data);
+          })
+    },
+    onSubmit(event) {
+      event.preventDefault()
+
+      let hashClient = this.$cookies.get("Session")
+      let deHashedClient = window.atob(hashClient).split(" ")
+      let newForm = {}
+      newForm.idClient = deHashedClient[0]
+      newForm.stockName = this.form.nombre_ISIN.split(" - ")[1]
+      newForm.idStock = this.form.nombre_ISIN.split(" - ")[0]
+      newForm.buyPrice = this.form.buyPrice
+      newForm.quantity = this.form.quantity
+      newForm.date = this.form.date
+      newForm.commision = this.form.commision
+
+
+      axios
+          .post('https://finanzyou-back.herokuapp.com/client/addTransaction', newForm)
+          .then(response => {
+            console.log(response)
+            window.location.href = "/client/portfolio"
+          })
+          .catch(err => {
+            this.showWarningModal(err.response.data)
+          })
+
+    },
+    onReset(event) {
+      event.preventDefault()
+      this.resetForm();
+    },
+
+    resetForm() {
+        this.form.nombre_ISIN= ''
+        this.form.quantity= 0
+        this.form.buyPrice= 0
+        this.form.date= null
+        this.form.commision= 0
+    },
+
+    showWarningModal(message) {
+      this.$bvModal.show("modal")
+      this.modal.message = message
+      this.modal.title = "¡Operación Fallida!"
+      this.modal.variant = 'warning'
+    },
+
+    async financialData(){
+      let promises = [];
+      for (let index in this.info) {
+        var options = {
+          method: 'GET',
+          url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
+          params: {symbols: index},
+          headers: {
+            'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+            'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+          }
+        };
+
+        promises.push(axios.request(options).then(response => {
+            this.infoFinances[index] = response.data;
+            return response.data;
+          }).catch(err => {
+            this.showWarningModal(err.response.data);
+          })
+        );
+        await new Promise(r => setTimeout(r, 250))
+      }
+     Promise.all(promises)
+         .then(() => {
+            this.showView = true;
+         })
+         .catch(err => {
+           console.log(err)
+         })
+    },
+
+    keyListener:function(){ //Cuando escribes en el input para añadir valores llama a autocomplete
+      let elem = document.getElementById("inputsymbol").value
+      this.autoComplete(elem);
+    },
+
+    autoComplete(toComplete){
+      this.values=[];
+      let options = {
+        method: 'GET',
+        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/autocomplete',
+        params: {query: toComplete, lang: 'en'},
+        headers: {
+          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+          'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+        }
+      };
+
+      axios.request(options).then(response => {
+        for(let value in response.data.ResultSet.Result){
+          this.values.push({symbol: response.data.ResultSet.Result[value].symbol, name: response.data.ResultSet.Result[value].name});
+        }
+        return response.data;
+      }).catch(err => {
+        this.showWarningModal(err.response.data);
+      });
+    }
+
+  }
+}
+</script>
+
+<style scoped>
+
+#portfolio {
+  margin: 20px;
+}
+
+#head{
+  padding: 20px;
+}
+
+#buttonaddValues{
+  margin-top: 10px;
+}
+
+.formButton {
+  margin: 10px;
+}
+
+.gypgreen{
+  color: green;
+}
+
+.gypred{
+  color: red;
+}
+
+</style>

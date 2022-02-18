@@ -1,0 +1,187 @@
+<template>
+  <div class="main_container" v-if="showView">
+    <h1>Trending Stocks</h1>
+    <b-table-simple outlined responsive class="table">
+      <b-thead class="thead-light">
+      <b-tr>
+        <b-th scope="col">Valor</b-th>
+        <b-th scope="col"></b-th>
+        <b-th scope="col">Precio</b-th>
+      </b-tr>
+      </b-thead>
+      <b-tbody>
+      <b-tr v-for="(value, index) in this.infoFinances" v-bind:key="infoFinances[index].quoteResponse.result[0].longName">
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">
+          {{ infoFinances[index].quoteResponse.result[0].longName }}
+        </b-td>
+        <b-td v-else>
+          {{ infoFinances[index].quoteResponse.result[0].shortName }}
+        </b-td>
+        <b-td>
+          <apexcharts width="700" height="200" type="line" :options="chartOptions" :series="series[index]"></apexcharts>
+        </b-td>
+        <b-td>
+          {{ infoFinances[index].quoteResponse.result[0].regularMarketPrice.toFixed(2) + " $" }}
+        </b-td>
+      </b-tr>
+      </b-tbody>
+    </b-table-simple>
+  </div>
+</template>
+
+<script>
+import axios from "axios";
+import VueApexCharts from 'vue-apexcharts'
+
+export default {
+  name: "Home",
+  components: {
+    apexcharts: VueApexCharts,
+  },
+  data(){
+    const categorias = Array.from(Array(1000).keys());
+    return{
+      infoFinances : [],
+      stockLists : null,
+      showView: false,
+      modal: {
+        title: '',
+        message: '',
+        variant: '',
+      },
+      test: '',
+      chartOptions: {
+        chart: {
+          id: 'basic-line',
+          zoom: {
+            enabled: false,
+          }
+        },
+        markers: {
+          showNullDataPoints: true,
+          strokeOpacity: 0.3,
+        },
+        stroke: {
+          width: 3
+        },
+        xaxis: {
+          categories: categorias,
+          tickAmount: 10,
+        },
+        yaxis: {
+          labels: {
+            formatter: (val) => {
+              return val.toFixed(2) + ' $';
+            }
+          }},
+      },
+      series: [],
+    }
+  },
+
+  created() {
+    this.getTrendingStocks()
+  },
+
+  methods: {
+    showWarningModal(message) {
+      this.$bvModal.show("modal")
+      this.modal.message = message
+      this.modal.title = "¡Operación Fallida!"
+      this.modal.variant = 'warning'
+    },
+
+    getTrendingStocks() {
+
+      const options = {
+        method: 'GET',
+        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v1/finance/trending/US',
+        headers: {
+          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+          'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+        }
+      }
+
+      axios.request(options).then(response => {
+        this.stockLists = (response.data.finance.result[0].quotes);
+        this.stockLists = this.stockLists.slice(0-4);
+        this.getFinancialData();
+      }).catch(err => {
+        this.showWarningModal(err.response.data);
+      })
+    },
+    async getFinancialData() {
+      let promises = [];
+      for (let stock of this.stockLists) {
+        const options = {
+          method: 'GET',
+          url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
+          params: {symbols: stock.symbol},
+          headers: {
+            'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+            'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+          }
+        };
+
+        promises.push(axios.request(options).then(response => {
+              this.infoFinances.push(response.data);
+              this.getChart(stock.symbol);
+              return response.data;
+            }).catch(err => {
+              this.showWarningModal(err.response.data);
+            })
+        );
+        await new Promise(r => setTimeout(r, 500))
+      }
+      Promise.all(promises)
+          .then(() => {
+            this.showView = true;
+          })
+          .catch(err => {
+            console.log(err)
+          })
+    },
+    getChart(ticker){ //This call returns the quotes of the value for the last 3 days
+      const options = {
+        method: 'GET',
+        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v8/finance/chart/' + ticker,
+        params: {range: '2d'},
+        headers: {
+          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+          'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+        }
+      };
+
+      axios.request(options).then( (response) => {
+        console.log(response.data);
+        this.paintChart(ticker, response.data.chart.result[0].indicators.quote[0].open);
+      }).catch(function (error) {
+        console.error(error);
+      });
+
+    },
+    paintChart(ticker, data){
+      this.series.push([{
+        name: ticker,
+        data: data
+      }])
+    }
+  }
+}
+
+</script>
+
+<style scoped>
+
+.main_container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+
+  padding: 50px;
+}
+
+td{
+  vertical-align: middle;
+}
+</style>
