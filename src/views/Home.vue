@@ -98,7 +98,7 @@ export default {
         url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v1/finance/trending/US',
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
         }
       }
 
@@ -119,7 +119,7 @@ export default {
           params: {symbols: stock.symbol},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+            'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
           }
         };
 
@@ -148,7 +148,7 @@ export default {
         params: {range: '2d'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
         }
       };
 

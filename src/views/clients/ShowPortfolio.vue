@@ -136,18 +136,35 @@
       </b-tr>
       </b-tbody>
     </b-table-simple>
+    <br>
+    <br>
+    <div v-if="showPieChart" class="control-section">
+      <div align='center'>
+        <ejs-accumulationchart style='display:block' :load='load' align='center' id='chartcontainer' :title="title"
+                               :legendSettings='legendSettings' :tooltip='tooltip'>
+          <e-accumulation-series-collection>
+            <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle=60 :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
+
+          </e-accumulation-series-collection>
+        </ejs-accumulationchart>
+      </div>
+    </div>
+
   </div>
 </template>
 
 <script>
 import axios from "axios";
+import Vue from "vue";
+import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
+Vue.use(AccumulationChartPlugin);
 
-
-export default {
+export default Vue.extend({
   name: "ShowPortfolio",
   data(){
       return{
         info : null,
+        showPieChart: false,
         form: {
           nombre_ISIN: '',
           quantity: 0,
@@ -164,8 +181,25 @@ export default {
           variant: '',
         },
         values: [],
-        renderFinished: false
+        renderFinished: false,
+        pieChartData: [],
+
+        dataLabel: {
+          visible: true, position: 'Outside',
+          connectorStyle: { length: '20px', type: 'Curve' }, name: 'text',
+        },
+
+        legendSettings: {
+          visible: false,
+        },
+
+        tooltip: { enable: true, format: '${point.x} : <b>${point.y}%</b>' },
+
+        title: "Sectores de la cartera"
       }
+  },
+  provide: {
+    accumulationchart: [AccumulationLegend, PieSeries, AccumulationDataLabel, AccumulationTooltip]
   },
   computed: {
 
@@ -208,20 +242,64 @@ export default {
             this.showWarningModal(err.response.data);
           })
     },
-    onSubmit(event) {
+    async getPieChart() {
+      let sectors = new Map()
+      for (let index in this.info) {
+        if(sectors.has(this.info[index]['sector'])) {
+          sectors.set(this.info[index]['sector'], sectors.get(this.info[index]['sector']) + 1)
+        }
+        else {
+          sectors.set(this.info[index]['sector'], 1)
+        }
+
+        await new Promise(r => setTimeout(r, 300))
+
+      }
+
+      for (let [key, value] of sectors) {
+        this.pieChartData.push({'x': key, 'y': (value/Object.values(this.info).length * 100).toFixed(2), text: key + " " + value})
+      }
+
+      this.showPieChart = true;
+
+    },
+    load: function(args) {
+      let selectedTheme = location.hash.split('/')[1];
+      selectedTheme = selectedTheme ? selectedTheme : 'Material';
+      args.chart.theme = (selectedTheme.charAt(0).toUpperCase() +
+          selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+    },
+    async onSubmit(event) {
       event.preventDefault()
 
       let hashClient = this.$cookies.get("Session")
       let deHashedClient = window.atob(hashClient).split(" ")
       let newForm = {}
+      let infoStock = this.form.nombre_ISIN.split(" - ")
+
+      let op = {
+        method: 'GET',
+        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/ws/insights/v1/finance/insights',
+        params: {symbol: infoStock[0]},
+        headers: {
+          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+        }
+      };
+
+      let axiosResponse = await axios.request(op)
+      let sector = (axiosResponse.data.finance.result.companySnapshot !== undefined) ? axiosResponse.data.finance.result.companySnapshot.sectorInfo : "N/A"
+
       newForm.idClient = deHashedClient[0]
-      newForm.stockName = this.form.nombre_ISIN.split(" - ")[1]
-      newForm.idStock = this.form.nombre_ISIN.split(" - ")[0]
+      newForm.stockID = infoStock[0]
+      newForm.stockName = infoStock[1]
+      newForm.stockSector = sector
       newForm.buyPrice = this.form.buyPrice
       newForm.quantity = this.form.quantity
       newForm.date = this.form.date
       newForm.commision = this.form.commision
 
+      console.log(newForm)
 
       axios
           .post('https://finanzyou-back.herokuapp.com/client/addTransaction', newForm)
@@ -263,7 +341,7 @@ export default {
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+            'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
           }
         };
 
@@ -274,11 +352,12 @@ export default {
             this.showWarningModal(err.response.data);
           })
         );
-        await new Promise(r => setTimeout(r, 250))
+        await new Promise(r => setTimeout(r, 300))
       }
      Promise.all(promises)
          .then(() => {
-            this.showView = true;
+           this.getPieChart()
+           this.showView = true
          })
          .catch(err => {
            console.log(err)
@@ -290,7 +369,7 @@ export default {
       this.autoComplete(elem);
     },
 
-    autoComplete(toComplete){
+    async autoComplete(toComplete){
       this.values=[];
       let options = {
         method: 'GET',
@@ -298,22 +377,20 @@ export default {
         params: {query: toComplete, lang: 'en'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '812d2bb886msh274ab4aa4155894p104054jsne9c021770e86'
+          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
         }
       };
 
-      axios.request(options).then(response => {
-        for(let value in response.data.ResultSet.Result){
-          this.values.push({symbol: response.data.ResultSet.Result[value].symbol, name: response.data.ResultSet.Result[value].name});
-        }
-        return response.data;
-      }).catch(err => {
-        this.showWarningModal(err.response.data);
-      });
+      let response = await axios.request(options)
+      for (let value in response.data.ResultSet.Result) {
+        this.values.push({
+          symbol: response.data.ResultSet.Result[value].symbol,
+          name: response.data.ResultSet.Result[value].name,
+        });
+      }
     }
-
   }
-}
+});
 </script>
 
 <style scoped>
