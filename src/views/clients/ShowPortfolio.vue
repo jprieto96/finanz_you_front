@@ -260,7 +260,7 @@ export default Vue.extend({
         this.pieChartData.push({'x': key, 'y': (value/Object.values(this.info).length * 100).toFixed(2), text: key + " " + value})
       }
 
-      this.showPieChart = true;
+      if(sectors.size !== 0) this.showPieChart = true;
 
     },
     load: function(args) {
