@@ -40,6 +40,7 @@ import VueApexCharts from 'vue-apexcharts'
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
 import API_KEY from "../../constants/constants";
+import moment from 'moment'
 
 export default {
   name: "Home",
@@ -48,7 +49,6 @@ export default {
     apexcharts: VueApexCharts
   },
   data(){
-    const categorias = Array.from(Array(1000).keys());
     return{
       infoFinances : [],
       stockLists : null,
@@ -73,10 +73,7 @@ export default {
         stroke: {
           width: 3
         },
-        xaxis: {
-          categories: categorias,
-          tickAmount: 10,
-        },
+        xaxis: null,
         yaxis: {
           labels: {
             formatter: (val) => {
@@ -163,17 +160,35 @@ export default {
 
       axios.request(options).then( (response) => {
         console.log(response.data);
-        this.paintChart(ticker, response.data.chart.result[0].indicators.quote[0].open);
+        this.paintChart(ticker, response.data.chart.result[0].indicators.quote[0].open, response.data.chart.result[0].timestamp);
       }).catch(function (error) {
         console.error(error);
       });
 
     },
-    paintChart(ticker, data){
+    paintChart(ticker, data, timestamps){
+      let fechas = [];
+      for (let i = 0; i < timestamps.length; i++){
+        let date = new Date(0);
+        date.setUTCSeconds(timestamps[i]);
+        fechas.push(moment(date).format('dd HH:MM'));
+      }
       this.series.push([{
         name: ticker,
         data: data
-      }])
+      }]);
+
+      let maxTicks = Math.min(timestamps.length/60, 20); //En timestamps se guardan los minutos, al dividirlo obtenemos el nº de horas
+
+      this.chartOptions.xaxis = {
+        categories: fechas,
+        tickAmount: maxTicks,
+      };
+
+      if(this.showView === false){
+        this.showView = true;
+      }
+
     }
   }
 }
