@@ -234,17 +234,28 @@ export default Vue.extend({
   methods: {
     getData(){
       let hashClient = this.$cookies.get("Session")
-      axios
-          .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
-          .then(response => {
-            this.info = response.data;
-            this.financialData();
-          })
-          .catch(err => {
-            this.showWarningModal(err.response.data);
-          })
+      this.info = JSON.parse(localStorage.getItem("info"))
+      this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
+
+      if(this.infoFinances === null || this.info === null) {
+        this.infoFinances = {}
+        axios
+            .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
+            .then(response => {
+              this.info = response.data;
+              localStorage.setItem("info", JSON.stringify(this.info))
+              this.financialData();
+            })
+            .catch(err => {
+              this.showWarningModal(err.response.data);
+            })
+      }
+      else {
+        this.showView = true
+        this.getPieChart()
+      }
     },
-    async getPieChart() {
+    getPieChart() {
       let sectors = new Map()
       for (let index in this.info) {
         if(sectors.has(this.info[index]['sector'])) {
@@ -253,9 +264,6 @@ export default Vue.extend({
         else {
           sectors.set(this.info[index]['sector'], 1)
         }
-
-        await new Promise(r => setTimeout(r, 300))
-
       }
 
       for (let [key, value] of sectors) {
@@ -278,6 +286,9 @@ export default Vue.extend({
       let deHashedClient = window.atob(hashClient).split(" ")
       let newForm = {}
       let infoStock = this.form.nombre_ISIN.split(" - ")
+
+      localStorage.removeItem("info")
+      localStorage.removeItem("infoFinances")
 
       let op = {
         method: 'GET',
@@ -351,11 +362,14 @@ export default Vue.extend({
             this.infoFinances[index] = response.data;
             return response.data;
           }).catch(err => {
-            this.showWarningModal(err.response.data);
+            this.showWarningModal(err);
           })
         );
         await new Promise(r => setTimeout(r, 300))
       }
+
+      localStorage.setItem("infoFinances", JSON.stringify(this.infoFinances))
+
      Promise.all(promises)
          .then(() => {
            this.getPieChart()

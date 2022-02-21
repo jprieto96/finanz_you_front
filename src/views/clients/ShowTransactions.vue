@@ -41,7 +41,6 @@ export default {
   data(){
       return{
         info : null,
-        infoFinances: {},
         showView : false,
         showEmptyMsg: false,
         modal: {
@@ -67,24 +66,34 @@ export default {
       let hashClient = this.$cookies.get("Session")
       let promises = []
 
-      promises.push(axios
-          .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
-          .then(response => {
-            this.info = response.data;
-            this.showEmptyMsg = this.info.length == 0
-          })
-          .catch((err) => {
-            console.log(err)
-            this.showEmptyMsg = true
-          }))
+      this.info = JSON.parse(localStorage.getItem("infoTransactions"))
 
-      Promise.all(promises)
-          .then(() => {
-            this.showView = true;
-          })
-          .catch(err => {
-            console.log(err)
-          })
+      if(this.info === null) {
+        promises.push(axios
+            .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
+            .then(response => {
+              this.info = response.data;
+              localStorage.setItem("infoTransactions", JSON.stringify(this.info))
+              this.showEmptyMsg = this.info.length == 0
+            })
+            .catch((err) => {
+              console.log(err)
+              this.showEmptyMsg = true
+            }))
+
+        Promise.all(promises)
+            .then(() => {
+              this.showView = true;
+            })
+            .catch(err => {
+              console.log(err)
+            })
+      }
+      else {
+        this.showView = this.info.length != 0
+        this.showEmptyMsg = this.info.length == 0
+      }
+
 
     },
     showWarningModal(message) {
