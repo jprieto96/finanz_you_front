@@ -149,20 +149,30 @@
         </ejs-accumulationchart>
       </div>
     </div>
-
+  </div>
+  <div v-else class="loading" >
+    <loading :active="true"
+             :can-cancel="false"
+             :is-full-page="false"/>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import Vue from "vue";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
 import API_KEY from "../../../constants/constants";
+
 
 Vue.use(AccumulationChartPlugin);
 
 export default Vue.extend({
   name: "ShowPortfolio",
+  components: {
+    Loading
+  },
   data(){
       return{
         info : null,
