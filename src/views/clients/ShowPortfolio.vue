@@ -157,6 +157,8 @@
 import axios from "axios";
 import Vue from "vue";
 import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
+import API_KEY from "../../../constants/constants";
+
 Vue.use(AccumulationChartPlugin);
 
 export default Vue.extend({
@@ -283,7 +285,7 @@ export default Vue.extend({
         params: {symbol: infoStock[0]},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+          'x-rapidapi-key': API_KEY
         }
       };
 
@@ -341,7 +343,7 @@ export default Vue.extend({
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+            'x-rapidapi-key': API_KEY
           }
         };
 
@@ -377,7 +379,7 @@ export default Vue.extend({
         params: {query: toComplete, lang: 'en'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+          'x-rapidapi-key': API_KEY
         }
       };
 
