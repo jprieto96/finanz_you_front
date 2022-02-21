@@ -39,6 +39,7 @@ import axios from "axios";
 import VueApexCharts from 'vue-apexcharts'
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
+import API_KEY from "../../constants/constants";
 
 export default {
   name: "Home",
@@ -106,7 +107,7 @@ export default {
         url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v1/finance/trending/US',
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+          'x-rapidapi-key': API_KEY
         }
       }
 
@@ -127,7 +128,7 @@ export default {
           params: {symbols: stock.symbol},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+            'x-rapidapi-key': API_KEY
           }
         };
 
@@ -156,7 +157,7 @@ export default {
         params: {range: '2d'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': '3e9b92bd30mshcdbaf82de01dd87p18e01ajsn2cfdf64d06f6'
+          'x-rapidapi-key': API_KEY
         }
       };
 
