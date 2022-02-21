@@ -27,17 +27,25 @@
       </b-tbody>
     </b-table-simple>
   </div>
+  <div class="loading" v-else>
+     <loading :active="true"
+              :can-cancel="false"
+              :is-full-page="false"/>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 import VueApexCharts from 'vue-apexcharts'
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 import API_KEY from "../../constants/constants";
 
 export default {
   name: "Home",
   components: {
-    apexcharts: VueApexCharts,
+    Loading,
+    apexcharts: VueApexCharts
   },
   data(){
     const categorias = Array.from(Array(1000).keys());

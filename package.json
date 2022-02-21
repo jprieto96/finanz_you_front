@@ -26,6 +26,7 @@
     "vue-class-component": "^7.2.6",
     "vue-cookies": "^1.7.4",
     "vue-cryptojs": "^2.2.1",
+    "vue-loading-overlay": "3.0",
     "vue-router": "^3.5.3",
     "vuex": "^3.6.2"
   },
