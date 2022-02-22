@@ -59,6 +59,21 @@
                 </b-form-invalid-feedback>
               </b-form-group>
               <b-form-group
+                  id="input-group-5"
+                  label="Divisa:"
+                  label-for="input-5"
+              >
+                <b-form-select
+                    v-model="form.currencySelected"
+                    id="currencySelect"
+                    :options="form.currencyOptions"
+                    :state="currencyState"
+                    required></b-form-select>
+                <b-form-invalid-feedback>
+                  Selecciona una divisa
+                </b-form-invalid-feedback>
+              </b-form-group>
+              <b-form-group
                   id="input-group-6"
                   label="Fecha de la compra:"
                   label-for="input-6"
@@ -148,7 +163,9 @@ export default {
           nombre_ISIN: '',
           quantity: 0,
           buyPrice: 0,
-          date: null
+          date: null,
+          currencySelected: null,
+          currencyOptions: [],
         },
         infoFinances: {},
         showView: false,
@@ -175,6 +192,9 @@ export default {
     dateState() {
       let currentTime = new Date()
       return this.form.date != null && this.form.date <= currentTime.toDateString()
+    },
+    currencyState() {
+      return this.form.currencySelected != null;
     }
   },
   created() {
@@ -183,7 +203,8 @@ export default {
       window.location.href = '/login'
     }
     else {
-      this.getData()
+      this.getData();
+      this.getCurrencyList();
     }
   },
 
@@ -249,6 +270,7 @@ export default {
       newForm.buyPrice = this.form.buyPrice
       newForm.quantity = this.form.quantity
       newForm.date = this.form.date
+      newForm.currency = this.form.currencySelected
 
       console.log(newForm)
 
@@ -340,6 +362,29 @@ export default {
           name: response.data.ResultSet.Result[value].name,
         });
       }
+    },
+    getCurrencyList(){
+      const options = {
+        method: 'GET',
+        url: 'https://currency-exchange.p.rapidapi.com/listquotes',
+        headers: {
+          'x-rapidapi-host': 'currency-exchange.p.rapidapi.com',
+          'x-rapidapi-key': API_KEY
+        }
+      };
+
+      axios.request(options).then((response) => {
+        for (const currency of response.data) {
+          this.form.currencyOptions.push({ //Para que el valor que devuelve al seleccionar y el texto sean iguales
+            value: currency,
+            text: currency
+          })
+        }
+      }).catch(function (error) {
+        console.error(error);
+      });
+
+
     }
   }
 };
