@@ -122,19 +122,6 @@
       </b-tr>
       </b-tbody>
     </b-table-simple>
-    <br>
-    <br>
-    <div v-if="showPieChart" class="control-section">
-      <div align='center'>
-        <ejs-accumulationchart style='display:block' :load='load' align='center' id='chartcontainer' :title="title"
-                               :legendSettings='legendSettings' :tooltip='tooltip'>
-          <e-accumulation-series-collection>
-            <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle=60 :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
-
-          </e-accumulation-series-collection>
-        </ejs-accumulationchart>
-      </div>
-    </div>
   </div>
   <div v-else class="loading" >
     <loading :active="true"
@@ -145,24 +132,18 @@
 
 <script>
 import axios from "axios";
-import Vue from "vue";
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
-import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
 import API_KEY from "../../../constants/constants";
 
-
-Vue.use(AccumulationChartPlugin);
-
-export default Vue.extend({
+export default {
   name: "ShowPortfolio",
   components: {
     Loading
   },
   data(){
-      return{
-        info : null,
-        showPieChart: false,
+      return {
+        info: null,
         form: {
           nombre_ISIN: '',
           quantity: 0,
@@ -170,33 +151,15 @@ export default Vue.extend({
           date: null
         },
         infoFinances: {},
-        showView : false,
+        showView: false,
         transactionDate: '',
         modal: {
           title: '',
           message: '',
           variant: '',
         },
-        values: [],
-        renderFinished: false,
-        pieChartData: [],
-
-        dataLabel: {
-          visible: true, position: 'Outside',
-          connectorStyle: { length: '20px', type: 'Curve' }, name: 'text',
-        },
-
-        legendSettings: {
-          visible: false,
-        },
-
-        tooltip: { enable: true, format: '${point.x} : <b>${point.y}%</b>' },
-
-        title: "Sectores de la cartera"
+        values: []
       }
-  },
-  provide: {
-    accumulationchart: [AccumulationLegend, PieSeries, AccumulationDataLabel, AccumulationTooltip]
   },
   computed: {
 
@@ -247,26 +210,7 @@ export default Vue.extend({
       }
       else {
         this.showView = true
-        this.getPieChart()
       }
-    },
-    getPieChart() {
-      let sectors = new Map()
-      for (let index in this.info) {
-        if(sectors.has(this.info[index]['sector'])) {
-          sectors.set(this.info[index]['sector'], sectors.get(this.info[index]['sector']) + 1)
-        }
-        else {
-          sectors.set(this.info[index]['sector'], 1)
-        }
-      }
-
-      for (let [key, value] of sectors) {
-        this.pieChartData.push({'x': key, 'y': (value/Object.values(this.info).length * 100).toFixed(2), text: key + " " + value})
-      }
-
-      if(sectors.size !== 0) this.showPieChart = true;
-
     },
     load: function(args) {
       let selectedTheme = location.hash.split('/')[1];
@@ -365,7 +309,6 @@ export default Vue.extend({
 
      Promise.all(promises)
          .then(() => {
-           this.getPieChart()
            this.showView = true
          })
          .catch(err => {
@@ -399,7 +342,7 @@ export default Vue.extend({
       }
     }
   }
-});
+};
 </script>
 
 <style scoped>
