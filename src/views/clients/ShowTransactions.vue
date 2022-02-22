@@ -20,7 +20,7 @@
         <b-td>{{ item.stockName }}</b-td>
         <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
-        <b-td>{{ item.buyPrice.toFixed(2) + "$" }}</b-td>
+        <b-td>{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
         <b-td>{{ item.date }}</b-td>
       </b-tr>
       </b-tbody>
