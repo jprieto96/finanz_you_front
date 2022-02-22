@@ -216,9 +216,7 @@ export default Vue.extend({
   },
   created() {
     if(this.$cookies.get("Session") == null) {
-      localStorage.removeItem("info")
-      localStorage.removeItem("infoFinances")
-      localStorage.removeItem("infoTransactions")
+      localStorage.clear()
       window.location.href = '/login'
     }
     else {
@@ -232,7 +230,9 @@ export default Vue.extend({
       this.info = JSON.parse(localStorage.getItem("info"))
       this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
 
-      if(this.infoFinances === null || this.info === null) {
+      if(this.infoFinances === null || this.info === null ||
+          (Object.keys(this.infoFinances).length === 0 && Object.keys(this.info).length !== 0 ) ||
+          (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
         axios
             .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
