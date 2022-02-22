@@ -20,7 +20,8 @@
         <b-td>{{ item.stockName }}</b-td>
         <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
-        <b-td>{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
+        <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
+        <b-td v-else-if="item.currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €" }}</b-td>
         <b-td>{{ item.date }}</b-td>
       </b-tr>
       </b-tbody>

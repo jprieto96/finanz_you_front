@@ -1,6 +1,6 @@
 <template>
   <div class="container" v-if="showView">
-    <div class="control-section">
+    <div class="control-section" v-if="showPieChart">
       <div align='center'>
         <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="title"
                                :legendSettings='legendSettings' :tooltip='tooltip'>
@@ -27,6 +27,7 @@ export default Vue.extend({
   data() {
     return {
       showView: false,
+      showPieChart: false,
       pieChartData: [],
       infoFinances: {},
       info: null,
@@ -71,6 +72,8 @@ export default Vue.extend({
       for (let [key, value] of sectors) {
         this.pieChartData.push({'x': key, 'y': (value/Object.values(this.info).length * 100).toFixed(2), text: key + " " + value})
       }
+
+      if(sectors.size !== 0) this.showPieChart = true
 
     },
     async financialData(){
