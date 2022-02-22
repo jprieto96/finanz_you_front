@@ -11,7 +11,6 @@
         <b-th scope="col">Ticker/ISIN</b-th>
         <b-th scope="col">Cantidad</b-th>
         <b-th scope="col">Precio de compra</b-th>
-        <b-th scope="col">Comisión</b-th>
         <b-th scope="col">Fecha de compra</b-th>
 
       </b-tr>
@@ -19,10 +18,9 @@
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
         <b-td>{{ item.stockName }}</b-td>
-        <b-td>{{ item.idStock }}</b-td>
+        <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
         <b-td>{{ item.buyPrice.toFixed(2) + "$" }}</b-td>
-        <b-td>{{ item.commision.toFixed(2) + "€" }}</b-td>
         <b-td>{{ item.date }}</b-td>
       </b-tr>
       </b-tbody>
@@ -54,6 +52,9 @@ export default {
 
   created() {
     if(this.$cookies.get("Session") == null) {
+      localStorage.removeItem("info")
+      localStorage.removeItem("infoFinances")
+      localStorage.removeItem("infoTransactions")
       window.location.href = '/login'
     }
     else {

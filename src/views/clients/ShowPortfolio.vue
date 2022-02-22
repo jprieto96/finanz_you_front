@@ -59,23 +59,6 @@
                 </b-form-invalid-feedback>
               </b-form-group>
               <b-form-group
-                  id="input-group-5"
-                  label="Comisión:"
-                  label-for="input-5"
-              >
-                <b-form-input
-                    v-model="form.commision"
-                    id="inputComision"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    :state="commissionState"
-                    required></b-form-input>
-                <b-form-invalid-feedback>
-                  Introduce una comisión mayor o igual que 0
-                </b-form-invalid-feedback>
-              </b-form-group>
-              <b-form-group
                   id="input-group-6"
                   label="Fecha de la compra:"
                   label-for="input-6"
@@ -123,8 +106,10 @@
         <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
         <b-td>{{ index }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
-        <b-td>{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
-        <b-td>{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " €"}}</b-td>
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
         <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
         <b-td class="gypgreen" v-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) > 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
         <b-td v-else-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) == 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
@@ -132,7 +117,8 @@
         <b-td class="gypgreen" v-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent > 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td v-else-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent == 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td class="gypred" v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
-        <b-td>{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €"}}</b-td>
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -181,8 +167,7 @@ export default Vue.extend({
           nombre_ISIN: '',
           quantity: 0,
           buyPrice: 0,
-          date: null,
-          commision: 0
+          date: null
         },
         infoFinances: {},
         showView : false,
@@ -224,9 +209,6 @@ export default Vue.extend({
     buyPriceState() {
       return this.form.buyPrice > 0
     },
-    commissionState() {
-      return this.form.commision >= 0
-    },
     dateState() {
       let currentTime = new Date()
       return this.form.date != null && this.form.date <= currentTime.toDateString()
@@ -234,6 +216,9 @@ export default Vue.extend({
   },
   created() {
     if(this.$cookies.get("Session") == null) {
+      localStorage.removeItem("info")
+      localStorage.removeItem("infoFinances")
+      localStorage.removeItem("infoTransactions")
       window.location.href = '/login'
     }
     else {
@@ -320,7 +305,6 @@ export default Vue.extend({
       newForm.buyPrice = this.form.buyPrice
       newForm.quantity = this.form.quantity
       newForm.date = this.form.date
-      newForm.commision = this.form.commision
 
       console.log(newForm)
 
@@ -345,7 +329,6 @@ export default Vue.extend({
         this.form.quantity= 0
         this.form.buyPrice= 0
         this.form.date= null
-        this.form.commision= 0
     },
 
     showWarningModal(message) {
