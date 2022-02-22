@@ -425,7 +425,7 @@ export default Vue.extend({
             .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
             .then(response => {
               this.infoTransactions = response.data;
-              localStorage.setItem("infoFinances", JSON.stringify(this.info))
+              localStorage.setItem("infoTransactions", JSON.stringify(this.infoTransactions))
             })
             .catch(err => {
               this.showWarningModal(err.response.data);
