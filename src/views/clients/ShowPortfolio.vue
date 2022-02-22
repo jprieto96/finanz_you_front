@@ -92,33 +92,47 @@
         <b-th scope="col">Nombre</b-th>
         <b-th scope="col">Ticker/ISIN</b-th>
         <b-th scope="col">Cantidad</b-th>
+        <b-th scope="col">GyP hoy</b-th>
+        <b-th scope="col">% hoy</b-th>
         <b-th scope="col">Último precio</b-th>
         <b-th scope="col">Valor mercado</b-th>
         <b-th scope="col">Valor mercado (EUR)</b-th>
-        <b-th scope="col">GyP hoy</b-th>
-        <b-th scope="col">% hoy</b-th>
         <b-th scope="col">Precio medio de compra</b-th>
+        <b-th scope="col">GyP total</b-th>
       </b-tr>
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
         <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
+        <!--Nombre-->
         <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
+        <!--Ticker/ISIN-->
         <b-td>{{ index }}</b-td>
+        <!--Cantidad-->
         <b-td>{{ item.quantity }}</b-td>
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " €"}}</b-td>
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
-        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
+        <!--GyP-->
         <b-td class="gypgreen" v-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) > 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
         <b-td v-else-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) == 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
         <b-td class="gypred" v-else>{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
+        <!--% hoy-->
         <b-td class="gypgreen" v-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent > 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td v-else-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent == 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td class="gypred" v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
+        <!--Último precio-->
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " €"}}</b-td>
+        <!--Valor mercado-->
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
+        <!--Valor mercado(EUR)-->
+        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
+        <!--Precio medio de compra-->
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
         <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €"}}</b-td>
+        <!--GyP total-->
+         <b-td class="gypgreen" v-if="gyp[index] > 0">{{gp[index] + " €"}}</b-td>
+        <b-td v-else-if="gyp[index] == 0">{{ gp[index] + " €"}}</b-td>
+        <b-td class="gypred" v-else>{{ gp[index] + " €"}}</b-td> 
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -162,6 +176,8 @@ export default Vue.extend({
   data(){
       return{
         info : null,
+        infoTransactions: null,
+        gyp: {},
         showPieChart: false,
         form: {
           nombre_ISIN: '',
@@ -229,8 +245,9 @@ export default Vue.extend({
       let hashClient = this.$cookies.get("Session")
       this.info = JSON.parse(localStorage.getItem("info"))
       this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
+      this.infoTransactions = JSON.parse(localStorage.getItem("infoTransactions"))
 
-      if(this.infoFinances === null || this.info === null ||
+       if(this.infoFinances === null || this.info === null ||
           (Object.keys(this.infoFinances).length === 0 && Object.keys(this.info).length !== 0 ) ||
           (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
@@ -240,6 +257,7 @@ export default Vue.extend({
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
+              this.totalGyP(hashClient);
             })
             .catch(err => {
               this.showWarningModal(err.response.data);
@@ -284,6 +302,7 @@ export default Vue.extend({
 
       localStorage.removeItem("info")
       localStorage.removeItem("infoFinances")
+      localStorage.removeItem("infoTransactions")
 
       let op = {
         method: 'GET',
@@ -360,7 +379,7 @@ export default Vue.extend({
         );
         await new Promise(r => setTimeout(r, 300))
       }
-
+    
       localStorage.setItem("infoFinances", JSON.stringify(this.infoFinances))
 
      Promise.all(promises)
@@ -396,6 +415,35 @@ export default Vue.extend({
           symbol: response.data.ResultSet.Result[value].symbol,
           name: response.data.ResultSet.Result[value].name,
         });
+      }
+    },
+
+    totalGyP(hashClient){//Peticion a showTransactions para asi calcular las GyP totales
+      let aux; //variable auxiliar para hacer cuentas
+      let gp; //pyg por cada transaccion
+      axios
+            .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
+            .then(response => {
+              this.infoTransactions = response.data;
+              localStorage.setItem("infoFinances", JSON.stringify(this.info))
+            })
+            .catch(err => {
+              this.showWarningModal(err.response.data);
+            })
+
+      for(let item in this.infoTransactions){
+          //Aux = precio actual - precio de compra
+          aux = this.infoFinances[item.stockID].quoteResponse.result[0].regularMarketPrice - item.buyPrice;
+          //gp = aux * cantidad
+          gp = aux * this.quantity;
+          
+          if(this.gyp[item.stockID]==null){
+            this.gyp[item.stockID]= gp;
+          }
+          //en gyp[STOCK] se van sumando todas las transacciones de STOCK hasta que tienes el Gyp total
+          else{ 
+            this.gyp[item.stockID]+=gp;
+          }
       }
     }
   }
