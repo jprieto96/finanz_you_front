@@ -71,6 +71,7 @@
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
+import CONSTANT from "../../../constants/constants";
 export default {
   name: "NewClient",
   components: {ModalMessage},
@@ -114,7 +115,7 @@ export default {
       newForm.password = window.btoa(unescape(encodeURIComponent(this.form.password + "tfgPROT01")));
       newForm.dni = this.form.dni
       axios
-          .post('https://finanzyou-back.herokuapp.com/client/create', newForm)
+          .post(CONSTANT.BACK_URL + 'client/create', newForm)
           .then(response => {
             this.showSuccessModal(response.data)
             this.resetForm()

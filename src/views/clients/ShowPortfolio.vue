@@ -136,19 +136,6 @@
       </b-tr>
       </b-tbody>
     </b-table-simple>
-    <br>
-    <br>
-    <div v-if="showPieChart" class="control-section">
-      <div align='center'>
-        <ejs-accumulationchart style='display:block' :load='load' align='center' id='chartcontainer' :title="title"
-                               :legendSettings='legendSettings' :tooltip='tooltip'>
-          <e-accumulation-series-collection>
-            <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle=60 :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
-
-          </e-accumulation-series-collection>
-        </ejs-accumulationchart>
-      </div>
-    </div>
   </div>
   <div v-else class="loading" >
     <loading :active="true"
@@ -159,16 +146,11 @@
 
 <script>
 import axios from "axios";
-import Vue from "vue";
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
-import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
-import API_KEY from "../../../constants/constants";
+import CONSTANT from "../../../constants/constants";
 
-
-Vue.use(AccumulationChartPlugin);
-
-export default Vue.extend({
+export default {
   name: "ShowPortfolio",
   components: {
     Loading
@@ -176,9 +158,7 @@ export default Vue.extend({
   data(){
       return{
         info : null,
-        infoTransactions: null,
         gyp: {},
-        showPieChart: false,
         form: {
           nombre_ISIN: '',
           quantity: 0,
@@ -186,33 +166,15 @@ export default Vue.extend({
           date: null
         },
         infoFinances: {},
-        showView : false,
+        showView: false,
         transactionDate: '',
         modal: {
           title: '',
           message: '',
           variant: '',
         },
-        values: [],
-        renderFinished: false,
-        pieChartData: [],
-
-        dataLabel: {
-          visible: true, position: 'Outside',
-          connectorStyle: { length: '20px', type: 'Curve' }, name: 'text',
-        },
-
-        legendSettings: {
-          visible: false,
-        },
-
-        tooltip: { enable: true, format: '${point.x} : <b>${point.y}%</b>' },
-
-        title: "Sectores de la cartera"
+        values: []
       }
-  },
-  provide: {
-    accumulationchart: [AccumulationLegend, PieSeries, AccumulationDataLabel, AccumulationTooltip]
   },
   computed: {
 
@@ -245,14 +207,13 @@ export default Vue.extend({
       let hashClient = this.$cookies.get("Session")
       this.info = JSON.parse(localStorage.getItem("info"))
       this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
-      this.infoTransactions = JSON.parse(localStorage.getItem("infoTransactions"))
 
        if(this.infoFinances === null || this.info === null ||
           (Object.keys(this.infoFinances).length === 0 && Object.keys(this.info).length !== 0 ) ||
           (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
         axios
-            .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
+            .get( CONSTANT.BACK_URL + 'client/showPortfolio/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
@@ -263,28 +224,9 @@ export default Vue.extend({
             })
       }
       else {
-        this.getPieChart()
         this.cuentas()
         this.showView = true
       }
-    },
-    getPieChart() {
-      let sectors = new Map()
-      for (let index in this.info) {
-        if(sectors.has(this.info[index]['sector'])) {
-          sectors.set(this.info[index]['sector'], sectors.get(this.info[index]['sector']) + 1)
-        }
-        else {
-          sectors.set(this.info[index]['sector'], 1)
-        }
-      }
-
-      for (let [key, value] of sectors) {
-        this.pieChartData.push({'x': key, 'y': (value/Object.values(this.info).length * 100).toFixed(2), text: key + " " + value})
-      }
-
-      if(sectors.size !== 0) this.showPieChart = true;
-
     },
     load: function(args) {
       let selectedTheme = location.hash.split('/')[1];
@@ -300,9 +242,7 @@ export default Vue.extend({
       let newForm = {}
       let infoStock = this.form.nombre_ISIN.split(" - ")
 
-      localStorage.removeItem("info")
-      localStorage.removeItem("infoFinances")
-      localStorage.removeItem("infoTransactions")
+      localStorage.clear()
 
       let op = {
         method: 'GET',
@@ -310,12 +250,24 @@ export default Vue.extend({
         params: {symbol: infoStock[0]},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': CONSTANT.API_KEY
+        }
+      };
+
+      let op2 = {
+        method: 'GET',
+        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
+        params: {symbols: infoStock[0]},
+        headers: {
+          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+          'x-rapidapi-key': CONSTANT.API_KEY
         }
       };
 
       let axiosResponse = await axios.request(op)
+      let axiosResponseInfoStoc = await axios.request(op2)
       let sector = (axiosResponse.data.finance.result.companySnapshot !== undefined) ? axiosResponse.data.finance.result.companySnapshot.sectorInfo : "N/A"
+      let currency = axiosResponseInfoStoc.data.quoteResponse.result[0].currency
 
       newForm.idClient = deHashedClient[0]
       newForm.stockID = infoStock[0]
@@ -324,11 +276,12 @@ export default Vue.extend({
       newForm.buyPrice = this.form.buyPrice
       newForm.quantity = this.form.quantity
       newForm.date = this.form.date
+      newForm.currency = currency
 
       console.log(newForm)
 
       axios
-          .post('https://finanzyou-back.herokuapp.com/client/addTransaction', newForm)
+          .post( CONSTANT.BACK_URL + 'client/addTransaction', newForm)
           .then(response => {
             console.log(response)
             window.location.href = "/client/portfolio"
@@ -361,13 +314,13 @@ export default Vue.extend({
       let promises = [];
 
       for (let index in this.info) {
-        var options = {
+        let options = {
           method: 'GET',
           url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': API_KEY
+            'x-rapidapi-key': CONSTANT.API_KEY
           }
         };
 
@@ -386,7 +339,6 @@ export default Vue.extend({
 
      Promise.all(promises)
          .then(() => {
-           this.getPieChart()
            this.cuentas();
            this.showView = true
          })
@@ -408,7 +360,7 @@ export default Vue.extend({
         params: {query: toComplete, lang: 'en'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': CONSTANT.API_KEY
         }
       };
 
@@ -428,7 +380,6 @@ export default Vue.extend({
       for(let item in this.info){
           //Aux = precio actual - precio de compra
           aux = this.infoFinances[item].quoteResponse.result[0].regularMarketPrice - this.info[item].buyPrice;
-          console.log(item)
           //gp = aux * cantidad
           gp = aux * this.info[item].quantity;
           
@@ -443,7 +394,7 @@ export default Vue.extend({
       }
     }
   }
-});
+};
 </script>
 
 <style scoped>

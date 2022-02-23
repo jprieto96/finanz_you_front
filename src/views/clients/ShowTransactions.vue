@@ -20,7 +20,8 @@
         <b-td>{{ item.stockName }}</b-td>
         <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
-        <b-td>{{ item.buyPrice.toFixed(2) + "$" }}</b-td>
+        <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
+        <b-td v-else-if="item.currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €" }}</b-td>
         <b-td>{{ item.date }}</b-td>
       </b-tr>
       </b-tbody>
@@ -32,6 +33,7 @@
 
 <script>
 import axios from "axios";
+import CONSTANT from "../../../constants/constants";
 
 
 export default {
@@ -69,7 +71,7 @@ export default {
 
       if(this.info === null) {
         promises.push(axios
-            .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
+            .get( CONSTANT.BACK_URL + 'client/showTransactions/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
