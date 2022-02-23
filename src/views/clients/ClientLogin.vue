@@ -112,8 +112,8 @@ export default {
             this.resetForm()
             window.location.href = '/client'
           })
-          .catch(err => {
-            this.showWarningModal(err.response.data)
+          .catch(() => {
+            this.showWarningModal(CONSTANT.ERROR_MSG)
           })
     },
     onReset(event) {
@@ -139,7 +139,7 @@ export default {
   },
   created() {
     if(this.$cookies.get("Session")) {
-      window.location.href = '/'
+      window.location.href = '/client'
     }
     else {
       this.showLogin = true

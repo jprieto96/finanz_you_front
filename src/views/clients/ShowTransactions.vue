@@ -79,8 +79,8 @@ export default {
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
               this.showEmptyMsg = this.info.length == 0
             })
-            .catch((err) => {
-              console.log(err)
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
               this.showEmptyMsg = true
             }))
 
@@ -88,8 +88,8 @@ export default {
             .then(() => {
               this.showView = true;
             })
-            .catch(err => {
-              console.log(err)
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
             })
       }
       else {

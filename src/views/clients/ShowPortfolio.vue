@@ -221,20 +221,14 @@ export default {
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
             })
-            .catch(err => {
-              this.showWarningModal(err.response.data);
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG);
             })
       }
       else {
         this.cuentas()
         this.showView = true
       }
-    },
-    load: function(args) {
-      let selectedTheme = location.hash.split('/')[1];
-      selectedTheme = selectedTheme ? selectedTheme : 'Material';
-      args.chart.theme = (selectedTheme.charAt(0).toUpperCase() +
-          selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
     },
     async onSubmit(event) {
       event.preventDefault()
@@ -268,30 +262,32 @@ export default {
 
       let axiosResponse = await axios.request(op)
       let axiosResponseInfoStoc = await axios.request(op2)
-      let sector = (axiosResponse.data.finance.result.companySnapshot !== undefined) ? axiosResponse.data.finance.result.companySnapshot.sectorInfo : "N/A"
-      let currency = axiosResponseInfoStoc.data.quoteResponse.result[0].currency
+      if(axiosResponse === null || axiosResponseInfoStoc === null) this.showWarningModal(CONSTANT.ERROR_MSG)
+      else {
+        let sector = (axiosResponse.data.finance.result.companySnapshot !== undefined) ? axiosResponse.data.finance.result.companySnapshot.sectorInfo : "N/A"
+        let currency = axiosResponseInfoStoc.data.quoteResponse.result[0].currency
 
-      newForm.idClient = deHashedClient[0]
-      newForm.stockID = infoStock[0]
-      newForm.stockName = infoStock[1]
-      newForm.stockSector = sector
-      newForm.buyPrice = this.form.buyPrice
-      newForm.quantity = this.form.quantity
-      newForm.date = this.form.date
-      newForm.currency = currency
+        newForm.idClient = deHashedClient[0]
+        newForm.stockID = infoStock[0]
+        newForm.stockName = infoStock[1]
+        newForm.stockSector = sector
+        newForm.buyPrice = this.form.buyPrice
+        newForm.quantity = this.form.quantity
+        newForm.date = this.form.date
+        newForm.currency = currency
 
-      console.log(newForm)
+        console.log(newForm)
 
-      axios
-          .post( CONSTANT.BACK_URL + 'client/addTransaction', newForm)
-          .then(response => {
-            console.log(response)
-            window.location.href = "/client/portfolio"
-          })
-          .catch(err => {
-            this.showWarningModal(err.response.data)
-          })
-
+        axios
+            .post( CONSTANT.BACK_URL + 'client/addTransaction', newForm)
+            .then(response => {
+              console.log(response)
+              window.location.href = "/client/portfolio"
+            })
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
+            })
+      }
     },
     onReset(event) {
       event.preventDefault()
@@ -328,10 +324,9 @@ export default {
 
         promises.push(axios.request(options).then(response => {
             this.infoFinances[index] = response.data;
-            
             return response.data;
-          }).catch(err => {
-            this.showWarningModal(err);
+          }).catch(() => {
+            this.showWarningModal(CONSTANT.ERROR_MSG);
           })
         );
         await new Promise(r => setTimeout(r, 300))
@@ -344,8 +339,8 @@ export default {
            this.cuentas();
            this.showView = true
          })
-         .catch(err => {
-           console.log(err)
+         .catch(() => {
+           this.showWarningModal(CONSTANT.ERROR_MSG)
          })
     },
 

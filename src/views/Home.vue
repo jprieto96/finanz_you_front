@@ -86,7 +86,13 @@ export default {
   },
 
   created() {
-    this.getTrendingStocks()
+    if(this.$cookies.get("Session") == null) {
+      this.getTrendingStocks()
+    }
+    else {
+      window.location.href = '/client'
+    }
+
   },
 
   methods: {
