@@ -226,8 +226,7 @@ export default {
       let newForm = {}
       let infoStock = this.form.nombre_ISIN.split(" - ")
 
-      localStorage.removeItem("info")
-      localStorage.removeItem("infoFinances")
+      localStorage.clear()
 
       let op = {
         method: 'GET',
@@ -239,8 +238,20 @@ export default {
         }
       };
 
+      let op2 = {
+        method: 'GET',
+        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
+        params: {symbols: infoStock[0]},
+        headers: {
+          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+          'x-rapidapi-key': API_KEY
+        }
+      };
+
       let axiosResponse = await axios.request(op)
+      let axiosResponseInfoStoc = await axios.request(op2)
       let sector = (axiosResponse.data.finance.result.companySnapshot !== undefined) ? axiosResponse.data.finance.result.companySnapshot.sectorInfo : "N/A"
+      let currency = axiosResponseInfoStoc.data.quoteResponse.result[0].currency
 
       newForm.idClient = deHashedClient[0]
       newForm.stockID = infoStock[0]
@@ -249,6 +260,7 @@ export default {
       newForm.buyPrice = this.form.buyPrice
       newForm.quantity = this.form.quantity
       newForm.date = this.form.date
+      newForm.currency = currency
 
       console.log(newForm)
 
@@ -285,7 +297,7 @@ export default {
     async financialData(){
       let promises = [];
       for (let index in this.info) {
-        var options = {
+        let options = {
           method: 'GET',
           url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
           params: {symbols: index},
