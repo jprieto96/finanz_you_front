@@ -33,6 +33,7 @@
 
 <script>
 import axios from "axios";
+import CONSTANT from "../../../constants/constants";
 
 
 export default {
@@ -70,7 +71,7 @@ export default {
 
       if(this.info === null) {
         promises.push(axios
-            .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
+            .get( CONSTANT.BACK_URL + 'client/showTransactions/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))

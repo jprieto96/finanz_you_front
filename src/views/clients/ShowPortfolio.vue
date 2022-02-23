@@ -92,33 +92,47 @@
         <b-th scope="col">Nombre</b-th>
         <b-th scope="col">Ticker/ISIN</b-th>
         <b-th scope="col">Cantidad</b-th>
+        <b-th scope="col">GyP hoy</b-th>
+        <b-th scope="col">% hoy</b-th>
         <b-th scope="col">Último precio</b-th>
         <b-th scope="col">Valor mercado</b-th>
         <b-th scope="col">Valor mercado (EUR)</b-th>
-        <b-th scope="col">GyP hoy</b-th>
-        <b-th scope="col">% hoy</b-th>
         <b-th scope="col">Precio medio de compra</b-th>
+        <b-th scope="col">GyP total</b-th>
       </b-tr>
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
         <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
+        <!--Nombre-->
         <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
+        <!--Ticker/ISIN-->
         <b-td>{{ index }}</b-td>
+        <!--Cantidad-->
         <b-td>{{ item.quantity }}</b-td>
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " €"}}</b-td>
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
-        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
+        <!--GyP-->
         <b-td class="gypgreen" v-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) > 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
         <b-td v-else-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) == 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
         <b-td class="gypred" v-else>{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
+        <!--% hoy-->
         <b-td class="gypgreen" v-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent > 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td v-else-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent == 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td class="gypred" v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
+        <!--Último precio-->
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " €"}}</b-td>
+        <!--Valor mercado-->
+        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
+        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
+        <!--Valor mercado(EUR)-->
+        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
+        <!--Precio medio de compra-->
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
         <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €"}}</b-td>
+        <!--GyP total-->
+        <b-td class="gypgreen" v-if="gyp[index] > 0">{{gyp[index].toFixed(2) + " €"}}</b-td>
+        <b-td v-else-if="gyp[index] == 0">{{ gyp[index].toFixed(2) + " €"}}</b-td>
+        <b-td class="gypred" v-else>{{ gyp[index].toFixed(2) + " €"}}</b-td> 
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -134,7 +148,7 @@
 import axios from "axios";
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
-import API_KEY from "../../../constants/constants";
+import CONSTANT from "../../../constants/constants";
 
 export default {
   name: "ShowPortfolio",
@@ -142,8 +156,9 @@ export default {
     Loading
   },
   data(){
-      return {
-        info: null,
+      return{
+        info : null,
+        gyp: {},
         form: {
           nombre_ISIN: '',
           quantity: 0,
@@ -193,12 +208,12 @@ export default {
       this.info = JSON.parse(localStorage.getItem("info"))
       this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
 
-      if(this.infoFinances === null || this.info === null ||
+       if(this.infoFinances === null || this.info === null ||
           (Object.keys(this.infoFinances).length === 0 && Object.keys(this.info).length !== 0 ) ||
           (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
         axios
-            .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
+            .get( CONSTANT.BACK_URL + 'client/showPortfolio/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
@@ -209,6 +224,7 @@ export default {
             })
       }
       else {
+        this.cuentas()
         this.showView = true
       }
     },
@@ -234,7 +250,7 @@ export default {
         params: {symbol: infoStock[0]},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': CONSTANT.API_KEY
         }
       };
 
@@ -244,7 +260,7 @@ export default {
         params: {symbols: infoStock[0]},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': CONSTANT.API_KEY
         }
       };
 
@@ -265,7 +281,7 @@ export default {
       console.log(newForm)
 
       axios
-          .post('https://finanzyou-back.herokuapp.com/client/addTransaction', newForm)
+          .post( CONSTANT.BACK_URL + 'client/addTransaction', newForm)
           .then(response => {
             console.log(response)
             window.location.href = "/client/portfolio"
@@ -296,6 +312,7 @@ export default {
 
     async financialData(){
       let promises = [];
+
       for (let index in this.info) {
         let options = {
           method: 'GET',
@@ -303,12 +320,13 @@ export default {
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': API_KEY
+            'x-rapidapi-key': CONSTANT.API_KEY
           }
         };
 
         promises.push(axios.request(options).then(response => {
             this.infoFinances[index] = response.data;
+            
             return response.data;
           }).catch(err => {
             this.showWarningModal(err);
@@ -316,11 +334,12 @@ export default {
         );
         await new Promise(r => setTimeout(r, 300))
       }
-
+    
       localStorage.setItem("infoFinances", JSON.stringify(this.infoFinances))
 
      Promise.all(promises)
          .then(() => {
+           this.cuentas();
            this.showView = true
          })
          .catch(err => {
@@ -341,7 +360,7 @@ export default {
         params: {query: toComplete, lang: 'en'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': CONSTANT.API_KEY
         }
       };
 
@@ -351,6 +370,27 @@ export default {
           symbol: response.data.ResultSet.Result[value].symbol,
           name: response.data.ResultSet.Result[value].name,
         });
+      }
+    },
+
+    cuentas(){
+      let aux; //variable auxiliar para hacer cuentas
+      let gp; //pyg por cada transaccion
+     
+      for(let item in this.info){
+          //Aux = precio actual - precio de compra
+          aux = this.infoFinances[item].quoteResponse.result[0].regularMarketPrice - this.info[item].buyPrice;
+          //gp = aux * cantidad
+          gp = aux * this.info[item].quantity;
+          
+          
+          if(this.gyp[item]==null){
+            this.gyp[item]= gp;
+          }
+          //en gyp[STOCK] se van sumando todas las transacciones de STOCK hasta que tienes el Gyp total
+          else{ 
+            this.gyp[item]+=gp;
+          }
       }
     }
   }

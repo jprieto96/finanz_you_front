@@ -18,7 +18,7 @@
 import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
 import Vue from "vue";
 import axios from "axios";
-import API_KEY from "../../../constants/constants";
+import CONSTANT from "../../../constants/constants";
 
 Vue.use(AccumulationChartPlugin);
 
@@ -85,7 +85,7 @@ export default Vue.extend({
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': API_KEY
+            'x-rapidapi-key': CONSTANT.API_KEY
           }
         };
 
@@ -126,7 +126,7 @@ export default Vue.extend({
           (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
         axios
-            .get('https://finanzyou-back.herokuapp.com/client/showPortfolio/' + hashClient)
+            .get(CONSTANT.BACK_URL + 'client/showPortfolio/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))

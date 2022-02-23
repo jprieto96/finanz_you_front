@@ -62,6 +62,7 @@
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
+import CONSTANT from "../../../constants/constants";
 export default {
   name: "Login",
   components: {ModalMessage},
@@ -100,7 +101,7 @@ export default {
       newForm.username = this.form.user
       newForm.password = window.btoa(unescape(encodeURIComponent(this.form.password + "tfgPROT01")));
       axios
-          .post('https://finanzyou-back.herokuapp.com/login', newForm)
+          .post(CONSTANT.BACK_URL + 'login', newForm)
           .then(response => {
             let d = new Date();
             d.setTime(d.getTime() + 1 * 60 * 60 * 1000);
@@ -142,6 +143,7 @@ export default {
     }
     else {
       this.showLogin = true
+      console.log(CONSTANT.BACK_URL)
     }
   }
 }
