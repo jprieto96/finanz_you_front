@@ -130,9 +130,9 @@
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
         <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €"}}</b-td>
         <!--GyP total-->
-         <b-td class="gypgreen" v-if="gyp[index] > 0">{{gp[index] + " €"}}</b-td>
-        <b-td v-else-if="gyp[index] == 0">{{ gp[index] + " €"}}</b-td>
-        <b-td class="gypred" v-else>{{ gp[index] + " €"}}</b-td> 
+        <b-td class="gypgreen" v-if="gyp[index] > 0">{{gyp[index].toFixed(2) + " €"}}</b-td>
+        <b-td v-else-if="gyp[index] == 0">{{ gyp[index].toFixed(2) + " €"}}</b-td>
+        <b-td class="gypred" v-else>{{ gyp[index].toFixed(2) + " €"}}</b-td> 
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -257,15 +257,15 @@ export default Vue.extend({
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
-              this.totalGyP(hashClient);
             })
             .catch(err => {
               this.showWarningModal(err.response.data);
             })
       }
       else {
-        this.showView = true
         this.getPieChart()
+        this.cuentas()
+        this.showView = true
       }
     },
     getPieChart() {
@@ -359,6 +359,7 @@ export default Vue.extend({
 
     async financialData(){
       let promises = [];
+
       for (let index in this.info) {
         var options = {
           method: 'GET',
@@ -372,6 +373,7 @@ export default Vue.extend({
 
         promises.push(axios.request(options).then(response => {
             this.infoFinances[index] = response.data;
+            
             return response.data;
           }).catch(err => {
             this.showWarningModal(err);
@@ -385,6 +387,7 @@ export default Vue.extend({
      Promise.all(promises)
          .then(() => {
            this.getPieChart()
+           this.cuentas();
            this.showView = true
          })
          .catch(err => {
@@ -418,31 +421,24 @@ export default Vue.extend({
       }
     },
 
-    totalGyP(hashClient){//Peticion a showTransactions para asi calcular las GyP totales
+    cuentas(){
       let aux; //variable auxiliar para hacer cuentas
       let gp; //pyg por cada transaccion
-      axios
-            .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
-            .then(response => {
-              this.infoTransactions = response.data;
-              localStorage.setItem("infoTransactions", JSON.stringify(this.infoTransactions))
-            })
-            .catch(err => {
-              this.showWarningModal(err.response.data);
-            })
-
-      for(let item in this.infoTransactions){
+     
+      for(let item in this.info){
           //Aux = precio actual - precio de compra
-          aux = this.infoFinances[item.stockID].quoteResponse.result[0].regularMarketPrice - item.buyPrice;
+          aux = this.infoFinances[item].quoteResponse.result[0].regularMarketPrice - this.info[item].buyPrice;
+          console.log(item)
           //gp = aux * cantidad
-          gp = aux * this.quantity;
+          gp = aux * this.info[item].quantity;
           
-          if(this.gyp[item.stockID]==null){
-            this.gyp[item.stockID]= gp;
+          
+          if(this.gyp[item]==null){
+            this.gyp[item]= gp;
           }
           //en gyp[STOCK] se van sumando todas las transacciones de STOCK hasta que tienes el Gyp total
           else{ 
-            this.gyp[item.stockID]+=gp;
+            this.gyp[item]+=gp;
           }
       }
     }
