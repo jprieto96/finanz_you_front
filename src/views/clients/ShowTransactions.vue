@@ -17,7 +17,9 @@
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
-        <b-td>{{ item.stockName }}</b-td>
+        <a :href="'/stock/' + item.stockID">
+          <b-td>{{ item.stockName }}</b-td>
+        </a>
         <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
         <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
@@ -116,6 +118,10 @@ export default {
 
 #head{
   padding: 20px;
+}
+
+a {
+  color: black;
 }
 
 </style>

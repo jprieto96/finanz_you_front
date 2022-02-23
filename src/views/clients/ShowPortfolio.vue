@@ -103,9 +103,11 @@
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
         <!--Nombre-->
-        <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
+        <a :href="'/stock/' + index">
+          <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
+          <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
+        </a>
         <!--Ticker/ISIN-->
         <b-td>{{ index }}</b-td>
         <!--Cantidad-->
@@ -421,6 +423,10 @@ export default {
 
 .gypred{
   color: red;
+}
+
+a {
+  color: black;
 }
 
 </style>
