@@ -139,7 +139,7 @@ export default {
   },
   created() {
     if(this.$cookies.get("Session")) {
-      window.location.href = '/'
+      window.location.href = '/client'
     }
     else {
       this.showLogin = true

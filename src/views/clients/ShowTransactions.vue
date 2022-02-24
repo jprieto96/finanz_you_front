@@ -22,7 +22,7 @@
         <b-td>{{ item.quantity }}</b-td>
         <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
         <b-td v-else-if="item.currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €" }}</b-td>
-        <b-td>{{ item.date }}</b-td>
+        <b-td>{{ getDate(item.date) }}</b-td>
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -96,6 +96,10 @@ export default {
       }
 
 
+    },
+    getDate(date) {
+      let arrayAux = date.split(' ')
+      return arrayAux[0] + " " + arrayAux[1] + " " + arrayAux[2]
     },
     showWarningModal(message) {
       this.$bvModal.show("modal")
