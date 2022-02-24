@@ -2,7 +2,7 @@
   <div id="portfolio" v-if="showView">
     <div id="head">
       <b-row>
-        <b-col lg="4" class="pb-2"><b-button id="buttonaddValues" v-b-modal.modal-lg variant="primary">Añadir valores</b-button>
+        <b-col lg="4" class="pb-2"><b-button id="buttonaddValues" pill v-b-modal.modal-lg variant="primary">Añadir valor</b-button>
           <b-modal id="modal-lg" size="lg" title="Añadir valores" hide-footer>
             <b-form @submit="onSubmit" @reset="onReset">
               <b-form-group
