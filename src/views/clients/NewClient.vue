@@ -119,10 +119,11 @@ export default {
           .then(response => {
             this.showSuccessModal(response.data)
             this.resetForm()
+            localStorage.clear()
             window.location.href = '/login'
           })
-          .catch(() => {
-            this.showWarningModal(CONSTANT.ERROR_MSG);
+          .catch((err) => {
+            this.showWarningModal(err.response.data)
           })
     },
     onReset(event) {
