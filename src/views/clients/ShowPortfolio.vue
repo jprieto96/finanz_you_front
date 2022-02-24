@@ -234,8 +234,8 @@ export default {
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
             })
-            .catch(() => {
-              this.showWarningModal(CONSTANT.ERROR_MSG);
+            .catch((err) => {
+              this.showWarningModal(err.response.data)
             })
       }
       else {

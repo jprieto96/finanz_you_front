@@ -110,10 +110,11 @@ export default {
                 "Session=" + response.data + ";" + expires + ";path=/";
             this.showSuccessModal(response.data)
             this.resetForm()
+            localStorage.clear()
             window.location.href = '/client'
           })
-          .catch(() => {
-            this.showWarningModal(CONSTANT.ERROR_MSG)
+          .catch((err) => {
+            this.showWarningModal(err.response.data)
           })
     },
     onReset(event) {
