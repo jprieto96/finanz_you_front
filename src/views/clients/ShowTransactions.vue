@@ -17,10 +17,13 @@
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
-        <b-td>{{ item.stockName }}</b-td>
+        <a :href="'/stock/' + item.stockID">
+          <b-td>{{ item.stockName }}</b-td>
+        </a>
         <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
-        <b-td>{{ item.buyPrice.toFixed(2) + "$" }}</b-td>
+        <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
+        <b-td v-else-if="item.currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €" }}</b-td>
         <b-td>{{ item.date }}</b-td>
       </b-tr>
       </b-tbody>
@@ -32,6 +35,7 @@
 
 <script>
 import axios from "axios";
+import CONSTANT from "../../../constants/constants";
 
 
 export default {
@@ -52,9 +56,7 @@ export default {
 
   created() {
     if(this.$cookies.get("Session") == null) {
-      localStorage.removeItem("info")
-      localStorage.removeItem("infoFinances")
-      localStorage.removeItem("infoTransactions")
+      localStorage.clear()
       window.location.href = '/login'
     }
     else {
@@ -71,14 +73,14 @@ export default {
 
       if(this.info === null) {
         promises.push(axios
-            .get('https://finanzyou-back.herokuapp.com/client/showTransactions/' + hashClient)
+            .get( CONSTANT.BACK_URL + 'client/showTransactions/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
               this.showEmptyMsg = this.info.length == 0
             })
-            .catch((err) => {
-              console.log(err)
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
               this.showEmptyMsg = true
             }))
 
@@ -86,8 +88,8 @@ export default {
             .then(() => {
               this.showView = true;
             })
-            .catch(err => {
-              console.log(err)
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
             })
       }
       else {
@@ -116,6 +118,10 @@ export default {
 
 #head{
   padding: 20px;
+}
+
+a {
+  color: black;
 }
 
 </style>

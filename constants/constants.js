@@ -1,3 +1,4 @@
-const API_KEY = '7f8e0f06aemsh10389b0e8277836p1c4e11jsna2dbb7767fc7'
-
-export default API_KEY
+const API_KEY = '84aa803efbmsh5a5ddc32303d51bp1581d2jsn9d8f4e741314'
+const BACK_URL = 'https://finanzyou-back.herokuapp.com/'
+const ERROR_MSG = "Se ha producido un error al cargar"
+export default{API_KEY, BACK_URL, ERROR_MSG}
