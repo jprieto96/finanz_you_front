@@ -17,7 +17,9 @@
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
-        <b-td>{{ item.stockName }}</b-td>
+        <a :href="'/stock/' + item.stockID">
+          <b-td>{{ item.stockName }}</b-td>
+        </a>
         <b-td>{{ item.stockID }}</b-td>
         <b-td>{{ item.quantity }}</b-td>
         <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
@@ -77,8 +79,8 @@ export default {
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
               this.showEmptyMsg = this.info.length == 0
             })
-            .catch((err) => {
-              console.log(err)
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
               this.showEmptyMsg = true
             }))
 
@@ -86,8 +88,8 @@ export default {
             .then(() => {
               this.showView = true;
             })
-            .catch(err => {
-              console.log(err)
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG)
             })
       }
       else {
@@ -120,6 +122,10 @@ export default {
 
 #head{
   padding: 20px;
+}
+
+a {
+  color: black;
 }
 
 </style>

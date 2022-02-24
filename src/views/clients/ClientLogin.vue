@@ -112,8 +112,8 @@ export default {
             this.resetForm()
             window.location.href = '/client'
           })
-          .catch(err => {
-            this.showWarningModal(err.response.data)
+          .catch(() => {
+            this.showWarningModal(CONSTANT.ERROR_MSG)
           })
     },
     onReset(event) {

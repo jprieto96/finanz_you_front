@@ -79,7 +79,7 @@ export default Vue.extend({
     async financialData(){
       let promises = [];
       for (let index in this.info) {
-        var options = {
+        let options = {
           method: 'GET',
           url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote',
           params: {symbols: index},
@@ -92,8 +92,8 @@ export default Vue.extend({
         promises.push(axios.request(options).then(response => {
               this.infoFinances[index] = response.data;
               return response.data;
-            }).catch(err => {
-              this.showWarningModal(err);
+            }).catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG);
             })
         );
         await new Promise(r => setTimeout(r, 300))
@@ -106,8 +106,8 @@ export default Vue.extend({
             this.getPieChart()
             this.showView = true
           })
-          .catch(err => {
-            console.log(err)
+          .catch(() => {
+            this.showWarningModal(CONSTANT.ERROR_MSG);
           })
     },
     load: function(args) {
@@ -132,14 +132,20 @@ export default Vue.extend({
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
             })
-            .catch(err => {
-              this.showWarningModal(err.response.data);
+            .catch(() => {
+              this.showWarningModal(CONSTANT.ERROR_MSG);
             })
       }
       else {
         this.getPieChart()
         this.showView = true
       }
+    },
+    showWarningModal(message) {
+      this.$bvModal.show("modal")
+      this.modal.message = message
+      this.modal.title = "¡Operación Fallida!"
+      this.modal.variant = 'warning'
     }
   }
 });
