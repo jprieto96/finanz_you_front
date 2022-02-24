@@ -68,6 +68,7 @@
                     id="datepicker"
                     class="mb-2"
                     :state="dateState"
+                    :max="maxDate"
                     required></b-form-datepicker>
                 <b-form-invalid-feedback>
                   Introduce una fecha válida
@@ -99,6 +100,7 @@
         <b-th scope="col">Valor mercado (EUR)</b-th>
         <b-th scope="col">Precio medio de compra</b-th>
         <b-th scope="col">GyP total</b-th>
+        <b-th scope="col">% total</b-th>
       </b-tr>
       </b-thead>
       <b-tbody>
@@ -134,7 +136,11 @@
         <!--GyP total-->
         <b-td class="gypgreen" v-if="gyp[index] > 0">{{gyp[index].toFixed(2) + " €"}}</b-td>
         <b-td v-else-if="gyp[index] == 0">{{ gyp[index].toFixed(2) + " €"}}</b-td>
-        <b-td class="gypred" v-else>{{ gyp[index].toFixed(2) + " €"}}</b-td> 
+        <b-td class="gypred" v-else>{{ gyp[index].toFixed(2) + " €"}}</b-td>
+        <!--% total-->
+        <b-td class="gypgreen" v-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) > 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
+        <b-td v-else-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) == 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
+        <b-td class="gypred" v-else>{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -158,8 +164,15 @@ export default {
     Loading
   },
   data(){
-      return{
-        info : null,
+
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+
+    // Next day
+    const restrictDate = new Date(today)
+
+      return {
+        info: null,
         gyp: {},
         form: {
           nombre_ISIN: '',
@@ -175,7 +188,8 @@ export default {
           message: '',
           variant: '',
         },
-        values: []
+        values: [],
+        maxDate: restrictDate
       }
   },
   computed: {
@@ -190,8 +204,7 @@ export default {
       return this.form.buyPrice > 0
     },
     dateState() {
-      let currentTime = new Date()
-      return this.form.date != null && this.form.date <= currentTime.toDateString()
+      return this.form.date !== null
     }
   },
   created() {
@@ -299,6 +312,7 @@ export default {
         this.form.quantity= 0
         this.form.buyPrice= 0
         this.form.date= null
+        this.form.time = null
     },
 
     showWarningModal(message) {
@@ -398,6 +412,7 @@ export default {
 
 #portfolio {
   margin: 20px;
+  padding: 20px;
 }
 
 #head{
