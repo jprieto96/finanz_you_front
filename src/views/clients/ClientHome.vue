@@ -18,7 +18,6 @@
 import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
 import Vue from "vue";
 import axios from "axios";
-import CONSTANT from "../../../constants/constants";
 
 Vue.use(AccumulationChartPlugin);
 
@@ -26,6 +25,9 @@ export default Vue.extend({
   name: "ClientHome",
   data() {
     return {
+      apiKey: process.env.VUE_APP_APIKEY,
+      backURL: process.env.VUE_APP_BACK_URL,
+      errorMSG: process.env.VUE_APP_ERROR_MSG,
       showView: false,
       showPieChart: false,
       pieChartData: [],
@@ -85,7 +87,7 @@ export default Vue.extend({
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': CONSTANT.API_KEY
+            'x-rapidapi-key': this.apiKey
           }
         };
 
@@ -93,7 +95,7 @@ export default Vue.extend({
               this.infoFinances[index] = response.data;
               return response.data;
             }).catch(() => {
-              this.showWarningModal(CONSTANT.ERROR_MSG);
+              this.showWarningModal(this.errorMSG);
             })
         );
         await new Promise(r => setTimeout(r, 300))
@@ -107,7 +109,7 @@ export default Vue.extend({
             this.showView = true
           })
           .catch(() => {
-            this.showWarningModal(CONSTANT.ERROR_MSG);
+            this.showWarningModal(this.errorMSG);
           })
     },
     load: function(args) {
@@ -126,14 +128,14 @@ export default Vue.extend({
           (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
         axios
-            .get(CONSTANT.BACK_URL + 'client/showPortfolio/' + hashClient)
+            .get(this.backURL + 'client/showPortfolio/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
             })
             .catch(() => {
-              this.showWarningModal(CONSTANT.ERROR_MSG);
+              this.showWarningModal(this.backURL);
             })
       }
       else {

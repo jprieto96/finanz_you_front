@@ -156,7 +156,6 @@
 import axios from "axios";
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
-import CONSTANT from "../../../constants/constants";
 
 export default {
   name: "ShowPortfolio",
@@ -172,6 +171,9 @@ export default {
     const restrictDate = new Date(today)
 
       return {
+        apiKey: process.env.VUE_APP_APIKEY,
+        backURL: process.env.VUE_APP_BACK_URL,
+        errorMSG: process.env.VUE_APP_ERROR_MSG,
         info: null,
         gyp: {},
         form: {
@@ -228,7 +230,7 @@ export default {
           (Object.keys(this.info).length === 0 && Object.keys(this.infoFinances).length !== 0 )) {
         this.infoFinances = {}
         axios
-            .get( CONSTANT.BACK_URL + 'client/showPortfolio/' + hashClient)
+            .get( this.backURL + 'client/showPortfolio/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
@@ -259,7 +261,7 @@ export default {
         params: {symbol: infoStock[0]},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': CONSTANT.API_KEY
+          'x-rapidapi-key': this.apiKey
         }
       };
 
@@ -269,13 +271,13 @@ export default {
         params: {symbols: infoStock[0]},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': CONSTANT.API_KEY
+          'x-rapidapi-key': this.apiKey
         }
       };
 
       let axiosResponse = await axios.request(op)
       let axiosResponseInfoStoc = await axios.request(op2)
-      if(axiosResponse === null || axiosResponseInfoStoc === null) this.showWarningModal(CONSTANT.ERROR_MSG)
+      if(axiosResponse === null || axiosResponseInfoStoc === null) this.showWarningModal(this.errorMSG)
       else {
         let sector = (axiosResponse.data.finance.result.companySnapshot !== undefined) ? axiosResponse.data.finance.result.companySnapshot.sectorInfo : "N/A"
         let currency = axiosResponseInfoStoc.data.quoteResponse.result[0].currency
@@ -292,13 +294,13 @@ export default {
         console.log(newForm)
 
         axios
-            .post( CONSTANT.BACK_URL + 'client/addTransaction', newForm)
+            .post( this.backURL + 'client/addTransaction', newForm)
             .then(response => {
               console.log(response)
               window.location.href = "/client/portfolio"
             })
             .catch(() => {
-              this.showWarningModal(CONSTANT.ERROR_MSG)
+              this.showWarningModal(this.errorMSG)
             })
       }
     },
@@ -312,7 +314,6 @@ export default {
         this.form.quantity= 0
         this.form.buyPrice= 0
         this.form.date= null
-        this.form.time = null
     },
 
     showWarningModal(message) {
@@ -332,7 +333,7 @@ export default {
           params: {symbols: index},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': CONSTANT.API_KEY
+            'x-rapidapi-key': this.apiKey
           }
         };
 
@@ -340,7 +341,7 @@ export default {
             this.infoFinances[index] = response.data;
             return response.data;
           }).catch(() => {
-            this.showWarningModal(CONSTANT.ERROR_MSG);
+            this.showWarningModal(this.errorMSG);
           })
         );
         await new Promise(r => setTimeout(r, 300))
@@ -354,7 +355,7 @@ export default {
            this.showView = true
          })
          .catch(() => {
-           this.showWarningModal(CONSTANT.ERROR_MSG)
+           this.showWarningModal(this.errorMSG)
          })
     },
 
@@ -371,7 +372,7 @@ export default {
         params: {query: toComplete, lang: 'en'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': CONSTANT.API_KEY
+          'x-rapidapi-key': this.apiKey
         }
       };
 

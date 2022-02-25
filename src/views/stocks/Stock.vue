@@ -9,13 +9,15 @@
 </template>
 
 <script>
-import CONSTANT from "../../../constants/constants";
 import axios from "axios";
 
 export default {
   name: "Stock",
   data() {
     return {
+      apiKey: process.env.VUE_APP_APIKEY,
+      backURL: process.env.VUE_APP_BACK_URL,
+      errorMSG: process.env.VUE_APP_ERROR_MSG,
       infoStock: {},
       id: this.$route.params.id,
       showView: false
@@ -32,12 +34,12 @@ export default {
         params: {symbol: this.id},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': CONSTANT.API_KEY
+          'x-rapidapi-key': this.apiKey
         }
       };
 
       let response = await axios.request(options)
-      if(response === null) this.showWarningModal(CONSTANT.ERROR_MSG)
+      if(response === null) this.showWarningModal(this.errorMSG)
       else {
         this.infoStock = response.data
         this.showView = true
