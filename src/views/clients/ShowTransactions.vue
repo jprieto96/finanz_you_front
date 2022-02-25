@@ -35,13 +35,13 @@
 
 <script>
 import axios from "axios";
-import CONSTANT from "../../../constants/constants";
-
 
 export default {
   name: "ShowTransactions",
   data(){
-      return{
+      return {
+        backURL: process.env.VUE_APP_BACK_URL,
+        errorMSG: process.env.VUE_APP_ERROR_MSG,
         info : null,
         showView : false,
         showEmptyMsg: false,
@@ -73,7 +73,7 @@ export default {
 
       if(this.info === null) {
         promises.push(axios
-            .get( CONSTANT.BACK_URL + 'client/showTransactions/' + hashClient)
+            .get( this.backURL + 'client/showTransactions/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
@@ -89,7 +89,7 @@ export default {
               this.showView = true;
             })
             .catch(() => {
-              this.showWarningModal(CONSTANT.ERROR_MSG)
+              this.showWarningModal(this.errorMSG)
             })
       }
       else {

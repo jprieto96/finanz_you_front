@@ -39,7 +39,6 @@ import axios from "axios";
 import VueApexCharts from 'vue-apexcharts'
 import Loading from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/vue-loading.css';
-import API_KEY from "../../constants/constants";
 import moment from 'moment'
 
 export default {
@@ -49,7 +48,10 @@ export default {
     apexcharts: VueApexCharts
   },
   data(){
-    return{
+    return {
+      apiKey: process.env.VUE_APP_APIKEY,
+      backURL: process.env.VUE_APP_BACK_URL,
+      errorMSG: process.env.VUE_APP_ERROR_MSG,
       infoFinances : [],
       stockLists : null,
       showView: false,
@@ -110,7 +112,7 @@ export default {
         url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v1/finance/trending/US',
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': this.apiKey
         }
       }
 
@@ -118,8 +120,8 @@ export default {
         this.stockLists = (response.data.finance.result[0].quotes);
         this.stockLists = this.stockLists.slice(0-4);
         this.getFinancialData();
-      }).catch(err => {
-        this.showWarningModal(err.response.data);
+      }).catch(() => {
+        this.showWarningModal(this.errorMSG);
       })
     },
     async getFinancialData() {
@@ -131,7 +133,7 @@ export default {
           params: {symbols: stock.symbol},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-            'x-rapidapi-key': API_KEY
+            'x-rapidapi-key': this.apiKey
           }
         };
 
@@ -139,8 +141,8 @@ export default {
               this.infoFinances.push(response.data);
               this.getChart(stock.symbol);
               return response.data;
-            }).catch(err => {
-              this.showWarningModal(err.response.data);
+            }).catch(() => {
+              this.showWarningModal(this.errorMSG);
             })
         );
         await new Promise(r => setTimeout(r, 500))
@@ -160,15 +162,15 @@ export default {
         params: {range: '2d'},
         headers: {
           'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': API_KEY
+          'x-rapidapi-key': this.apiKey
         }
       };
 
       axios.request(options).then( (response) => {
         console.log(response.data);
         this.paintChart(ticker, response.data.chart.result[0].indicators.quote[0].open, response.data.chart.result[0].timestamp);
-      }).catch(function (error) {
-        console.error(error);
+      }).catch(() => {
+        this.showWarningModal(this.errorMSG);
       });
 
     },

@@ -71,12 +71,13 @@
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
-import CONSTANT from "../../../constants/constants";
+
 export default {
   name: "NewClient",
   components: {ModalMessage},
   data() {
     return {
+      backURL: process.env.VUE_APP_BACK_URL,
       form: {
         user: '',
         password: '',
@@ -115,7 +116,7 @@ export default {
       newForm.password = window.btoa(unescape(encodeURIComponent(this.form.password + "tfgPROT01")));
       newForm.dni = this.form.dni
       axios
-          .post(CONSTANT.BACK_URL + 'client/create', newForm)
+          .post(this.backURL + 'client/create', newForm)
           .then(response => {
             this.showSuccessModal(response.data)
             this.resetForm()
