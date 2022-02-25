@@ -106,7 +106,7 @@
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
         <!--Nombre-->
-        <a :href="'/stock/' + index">
+        <a :href="'/stock/' + index" target="_blank">
           <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
           <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
         </a>
