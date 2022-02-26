@@ -45,6 +45,7 @@
                   id="input-group-4"
                   label="Precio de compra:"
                   label-for="input-4"
+                  description="Se asume que el precio de compra introducido es en la moneda local del activo."
               >
                 <b-form-input
                     v-model="form.buyPrice"
