@@ -1,22 +1,23 @@
 <template>
-  <div class="container" v-if="showView">
-    <a :href="this.infoStock.results.homepage_url" target="_blank">
+  <div class="detailPage" v-if="showView">
+    <a :href="infoStock.website" target="_blank">
       <div class="titleStock">
-        <b-img v-if="this.infoStock.results.branding.logo_url !== null" class="logo" :src="this.infoStock.results.branding.logo_url + '?apikey=' + this.apiKey" fluid alt="Responsive image"></b-img>
-        <h1>{{ this.infoStock.results.name }}</h1>
+        <b-img v-if="img !== null && this.img.branding.logo_url !== null" class="logo" :src="img.branding.logo_url + '?apikey=' + apiKeyForImage" fluid alt="Responsive image"></b-img>
+        <h1 v-if="img !== null">{{ this.img.name }}</h1>
+        <h1 v-else>{{ this.id }}</h1>
       </div>
     </a>
-    <p class="stockDescription" v-if="this.infoStock.results.hasOwnProperty('description')">
-      {{ this.infoStock.results.description }}
+    <p class="stockDescription" v-if="this.infoStock.hasOwnProperty('longBusinessSummary')">
+      {{ this.infoStock.longBusinessSummary }}
     </p>
     <p class="stockDescription" v-else>Descripción no disponible</p>
     <br>
     <hr>
     <br>
-    <div class="news">
+    <div v-if="this.news.length > 0" class="news">
       <h4><b>5 últimas noticias</b></h4>
       <br>
-      <b-card v-for="item in news.results" v-bind:key="item" no-body class="overflow-auto newsCard text-center mb-3 card-item">
+      <b-card v-for="item in news" v-bind:key="item" no-body class="overflow-auto newsCard text-center mb-3 card-item">
         <b-row no-gutters>
           <b-col md="3">
             <b-card-img :src="item.image_url" :alt="id" class="rounded-0"></b-card-img>
@@ -56,13 +57,15 @@ export default {
   name: "Stock",
   data() {
     return {
-      apiKey: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
+      apiKey: process.env.VUE_APP_APIKEY,
+      apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       infoStock: {},
       id: this.$route.params.id,
       showView: false,
-      news: {},
+      news: [],
+      img: null,
       modal: {
         title: '',
         message: '',
@@ -76,18 +79,40 @@ export default {
   methods: {
     async getData() {
       try {
-        let responseInfo = await axios.get("https://api.polygon.io/v3/reference/tickers/" + this.id + "?apikey=" + this.apiKey)
-        let responseNews = await axios.get("https://api.polygon.io/v2/reference/news?ticker=" + this.id + "&limit=5&apiKey=" + this.apiKey)
-        if(responseInfo === null || responseNews === null) this.showWarningModal(this.errorMSG)
-        else {
-          this.infoStock = responseInfo.data
-          this.news = responseNews.data
-          this.showView = true
+        let options = {
+          method: 'GET',
+          url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v11/finance/quoteSummary/' + this.id,
+          params: {
+            modules: 'assetProfile,financialData,recommendationTrend,incomeStatementHistory, '
+          },
+          headers: {
+            'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+            'x-rapidapi-key': this.apiKey
+          }
+        };
+        let responseStockInfo = await axios.request(options)
+        this.infoStock = responseStockInfo.data.quoteSummary.result[0].assetProfile
+      }
+      catch(err) {
+        console.log(err)
+        document.querySelector(".errorDiv").style.display="block";
+        return
+      }
+
+      try {
+        let responseForPic = await axios.get("https://api.polygon.io/v3/reference/tickers/" + this.id + "?apikey=" + this.apiKeyForImage)
+        let responseNews = await axios.get("https://api.polygon.io/v2/reference/news?ticker=" + this.id + "&limit=5&apiKey=" + this.apiKeyForImage)
+        if(responseForPic.data.status !== "NOT_FOUND") {
+          this.img = responseForPic.data.results
         }
+        this.news = responseNews.data.results
+        this.showView = true
       }
-      catch (err) {
-        console.error(err)
+      catch(err) {
+        this.showView = true
+        console.log(err)
       }
+
 
     },
     showWarningModal(message) {
@@ -112,8 +137,7 @@ export default {
   margin-right: 40px;
 }
 
-.container {
-  display: block;
+.detailPage {
   text-align: left;
   padding: 30px;
 }
@@ -128,6 +152,7 @@ a {
 }
 
 .errorDiv {
+  display: none;
   padding: 35px;
 }
 
