@@ -111,28 +111,29 @@ export default {
   },
   methods: {
     getPieChart() {
-      let info = JSON.parse(localStorage.getItem("info"))
+      let stockInfo = JSON.parse(localStorage.getItem("info"))[this.id]
       let infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
       let marketValueStockDetail = 0
       if(infoFinances[this.id].quoteResponse.result[0].currency === 'USD') {
-        marketValueStockDetail = (infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * info[this.id].quantity) * 0.87
+        marketValueStockDetail = (infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity) * 0.87
       }
       else {
-        marketValueStockDetail = infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * info[this.id].quantity
+        marketValueStockDetail = infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity
       }
 
       let totalMarketValue = 0
       for(let stock in infoFinances) {
         if(infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
-          totalMarketValue += ((infoFinances[stock].quoteResponse.result[0].regularMarketPrice * info[stock].quantity) * 0.87)
+          totalMarketValue += (infoFinances[stock].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity) * 0.87
         }
         else {
-          totalMarketValue += infoFinances[stock].quoteResponse.result[0].regularMarketPrice * info[stock].quantity
+          totalMarketValue += infoFinances[stock].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity
         }
       }
       
       let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
       let restPercentage = (100 - percentageOfParticularStock).toFixed(2)
+      console.log(percentageOfParticularStock)
       if(percentageOfParticularStock > 0){
         this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
       }

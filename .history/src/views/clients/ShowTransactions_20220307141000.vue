@@ -116,7 +116,7 @@ export default {
               this.showEmptyMsg = this.info.length == 0
             })
             .catch((err) => {
-              this.showWarningModal(err.response.data)
+              this.showWarningModal("perro")
               this.showEmptyMsg = true
             }))
 

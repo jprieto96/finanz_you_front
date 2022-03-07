@@ -115,8 +115,8 @@ export default {
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
               this.showEmptyMsg = this.info.length == 0
             })
-            .catch((err) => {
-              this.showWarningModal(err.response.data)
+            .catch(() => {
+              this.showWarningModal("perro")
               this.showEmptyMsg = true
             }))
 

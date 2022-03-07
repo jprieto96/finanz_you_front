@@ -74,26 +74,31 @@ export default Vue.extend({
   },
   methods: {
     getAllStocksChart() {
-      if(Object.keys(this.info).length > 0 && Object.keys(this.infoFinances).length > 0) {
-        let totalMarketValue = 0
-        let marketByStock = {}
-        for(let stock in this.infoFinances) {
-          if(this.infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
-            marketByStock[stock] = (this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity) * 0.87
-            totalMarketValue += (this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity) * 0.87
-          }
-          else {
-            marketByStock[stock] = this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
-            totalMarketValue += this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
-          }
-        }
-        
-        for(let stock in this.infoFinances) {
-          this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
-        }
-        
-        this.showStocksChart = true
+      let stockInfo = JSON.parse(localStorage.getItem("info"))[this.id]
+      let infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
+      let marketValueStockDetail = 0
+      if(infoFinances[this.id].quoteResponse.result[0].currency === 'USD') {
+        marketValueStockDetail = (infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity) * 0.87
       }
+      else {
+        marketValueStockDetail = infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity
+      }
+
+      let totalMarketValue = 0
+      for(let stock in infoFinances) {
+        if(infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
+          totalMarketValue += (infoFinances[stock].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity) * 0.87
+        }
+        else {
+          totalMarketValue += infoFinances[stock].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity
+        }
+      }
+      
+      let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
+      let restPercentage = (100 - percentageOfParticularStock).toFixed(2)
+      this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
+      this.pieChartData.push({'x': "Resto de la cartera", 'y': restPercentage, text: "Resto de la cartera"})
+      this.showPieChart = true
     },
     getSectorChart() {
       let sectors = new Map()
@@ -141,7 +146,6 @@ export default Vue.extend({
       Promise.all(promises)
           .then(() => {
             this.getSectorChart()
-            this.getAllStocksChart()
             this.showView = true
           })
           .catch(() => {
@@ -176,7 +180,6 @@ export default Vue.extend({
       }
       else {
         this.getSectorChart()
-        this.getAllStocksChart()
         this.showView = true
       }
     },

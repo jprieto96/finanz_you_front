@@ -89,7 +89,7 @@ export default Vue.extend({
         }
         
         for(let stock in this.infoFinances) {
-          this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
+          this.pieChartData.push({'x': this.id, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
         }
         
         this.showStocksChart = true
@@ -154,6 +154,12 @@ export default Vue.extend({
       args.chart.theme = (selectedTheme.charAt(0).toUpperCase() +
           selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
     },
+    loadStocks: function(args) {
+      let selectedTheme = location.hash.split('/')[1];
+      selectedTheme = selectedTheme ? selectedTheme : 'Material';
+      args.chart.theme = (selectedTheme.charAt(0).toUpperCase() +
+          selectedTheme.slice(1)).replace(/-dark/i, 'Dark').replace(/contrast/i, 'Contrast');
+    }.
     getData(){
       let hashClient = this.$cookies.get("Session")
       this.info = JSON.parse(localStorage.getItem("info"))
