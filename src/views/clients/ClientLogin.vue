@@ -62,12 +62,13 @@
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
-import CONSTANT from "../../../constants/constants";
+
 export default {
   name: "Login",
   components: {ModalMessage},
   data() {
     return {
+      backURL: process.env.VUE_APP_BACK_URL,
       form: {
         user: '',
         password: '',
@@ -96,12 +97,13 @@ export default {
   },
   methods: {
     onSubmit(event) {
+      console.log(this.backURL)
       event.preventDefault()
       let newForm = {}
       newForm.username = this.form.user
       newForm.password = window.btoa(unescape(encodeURIComponent(this.form.password + "tfgPROT01")));
       axios
-          .post(CONSTANT.BACK_URL + 'login', newForm)
+          .post(this.backURL + 'login', newForm)
           .then(response => {
             let d = new Date();
             d.setTime(d.getTime() + 1 * 60 * 60 * 1000);
@@ -144,7 +146,6 @@ export default {
     }
     else {
       this.showLogin = true
-      console.log(CONSTANT.BACK_URL)
     }
   }
 }

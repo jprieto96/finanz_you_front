@@ -17,7 +17,7 @@
       </b-thead>
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
-        <a :href="'/stock/' + item.stockID">
+        <a :href="'/stock/' + item.stockID" target="_blank">
           <b-td>{{ item.stockName }}</b-td>
         </a>
         <b-td>{{ item.stockID }}</b-td>
@@ -30,18 +30,31 @@
     </b-table-simple>
     <br>
     <p class="empty_msg" v-if="showEmptyMsg">No hay ningún movimiento</p>
+    <b-modal id="modal-1" title="BootstrapVue">
+      <p class="my-4">Hello from modal!</p>
+    </b-modal>
+
+    <ModalMessage
+        :message="modal.message"
+        :title="modal.title"
+        :variant="modal.variant"
+        class="custom-modal"
+    ></ModalMessage>
   </div>
 </template>
 
 <script>
 import axios from "axios";
-import CONSTANT from "../../../constants/constants";
-
+import ModalMessage from "@/components/Modal";
 
 export default {
   name: "ShowTransactions",
+  // eslint-disable-next-line vue/no-unused-components
+  components: {ModalMessage},
   data(){
-      return{
+      return {
+        backURL: process.env.VUE_APP_BACK_URL,
+        errorMSG: process.env.VUE_APP_ERROR_MSG,
         info : null,
         showView : false,
         showEmptyMsg: false,
@@ -73,7 +86,7 @@ export default {
 
       if(this.info === null) {
         promises.push(axios
-            .get( CONSTANT.BACK_URL + 'client/showTransactions/' + hashClient)
+            .get( this.backURL + 'client/showTransactions/' + hashClient)
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
@@ -89,7 +102,7 @@ export default {
               this.showView = true;
             })
             .catch(() => {
-              this.showWarningModal(CONSTANT.ERROR_MSG)
+              this.showWarningModal(this.errorMSG)
             })
       }
       else {
@@ -101,7 +114,7 @@ export default {
     },
     getDate(date) {
       let arrayAux = date.split(' ')
-      return arrayAux[0] + " " + arrayAux[1] + " " + arrayAux[2]
+      return arrayAux[0] + " " + arrayAux[1] + " " + arrayAux[2].split(',')[0]
     },
     showWarningModal(message) {
       this.$bvModal.show("modal")
