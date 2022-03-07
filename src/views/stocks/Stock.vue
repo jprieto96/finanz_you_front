@@ -1,10 +1,52 @@
 <template>
-  <div class="container" v-if="showView">
-    <h1>{{ id }}</h1>
-    <p v-if="this.infoStock.finance.result.reports.length > 0 && this.infoStock.finance.result.reports[0].hasOwnProperty('summary')">
-      {{ this.infoStock.finance.result.reports[0].summary }}
+  <div class="detailPage" v-if="showView">
+    <a :href="infoStock.website" target="_blank">
+      <div class="titleStock">
+        <b-img v-if="img !== null && this.img.branding.logo_url !== null" class="logo" :src="img.branding.logo_url + '?apikey=' + apiKeyForImage" fluid alt="Responsive image"></b-img>
+        <h1 v-if="img !== null">{{ this.img.name }}</h1>
+        <h1 v-else>{{ this.id }}</h1>
+      </div>
+    </a>
+    <p class="stockDescription" v-if="this.infoStock.hasOwnProperty('longBusinessSummary')">
+      {{ this.infoStock.longBusinessSummary }}
     </p>
-    <p v-else>Summary N/A</p>
+    <p class="stockDescription" v-else>Descripción no disponible</p>
+    <br>
+    <hr>
+    <br>
+    <div v-if="this.news.length > 0" class="news">
+      <h4><b>5 últimas noticias</b></h4>
+      <br>
+      <b-card v-for="item in news" v-bind:key="item" no-body class="overflow-auto newsCard text-center mb-3 card-item">
+        <b-row no-gutters>
+          <b-col md="3">
+            <b-card-img :src="item.image_url" :alt="id" class="rounded-0"></b-card-img>
+          </b-col>
+          <b-col md="9">
+            <b-card-body :title="item.title">
+              <b-card-text>
+                {{
+                  item.description
+                }}
+              </b-card-text>
+            </b-card-body>
+          </b-col>
+        </b-row>
+      </b-card>
+    </div>
+    <b-modal id="modal-1" title="BootstrapVue">
+      <p class="my-4">Hello from modal!</p>
+    </b-modal>
+
+    <ModalMessage
+        :message="modal.message"
+        :title="modal.title"
+        :variant="modal.variant"
+        class="custom-modal"
+    ></ModalMessage>
+  </div>
+  <div class="errorDiv" v-else>
+    <h3>No hay información detallada sobre este activo</h3>
   </div>
 </template>
 
@@ -16,11 +58,19 @@ export default {
   data() {
     return {
       apiKey: process.env.VUE_APP_APIKEY,
+      apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       infoStock: {},
       id: this.$route.params.id,
-      showView: false
+      showView: false,
+      news: [],
+      img: null,
+      modal: {
+        title: '',
+        message: '',
+        variant: '',
+      }
     }
   },
   created() {
@@ -28,22 +78,42 @@ export default {
   },
   methods: {
     async getData() {
-      let options = {
-        method: 'GET',
-        url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/ws/insights/v1/finance/insights',
-        params: {symbol: this.id},
-        headers: {
-          'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
-          'x-rapidapi-key': this.apiKey
-        }
-      };
+      try {
+        let options = {
+          method: 'GET',
+          url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v11/finance/quoteSummary/' + this.id,
+          params: {
+            modules: 'assetProfile,financialData,recommendationTrend,incomeStatementHistory, '
+          },
+          headers: {
+            'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+            'x-rapidapi-key': this.apiKey
+          }
+        };
+        let responseStockInfo = await axios.request(options)
+        this.infoStock = responseStockInfo.data.quoteSummary.result[0].assetProfile
+      }
+      catch(err) {
+        console.log(err)
+        document.querySelector(".errorDiv").style.display="block";
+        return
+      }
 
-      let response = await axios.request(options)
-      if(response === null) this.showWarningModal(this.errorMSG)
-      else {
-        this.infoStock = response.data
+      try {
+        let responseForPic = await axios.get("https://api.polygon.io/v3/reference/tickers/" + this.id + "?apikey=" + this.apiKeyForImage)
+        let responseNews = await axios.get("https://api.polygon.io/v2/reference/news?ticker=" + this.id + "&limit=5&apiKey=" + this.apiKeyForImage)
+        if(responseForPic.data.status !== "NOT_FOUND") {
+          this.img = responseForPic.data.results
+        }
+        this.news = responseNews.data.results
         this.showView = true
       }
+      catch(err) {
+        this.showView = true
+        console.log(err)
+      }
+
+
     },
     showWarningModal(message) {
       this.$bvModal.show("modal")
@@ -57,8 +127,45 @@ export default {
 
 <style scoped>
 
-.container {
-  padding: 15px;
+.titleStock {
+  display: flex;
+}
+
+.logo {
+  height: 50px;
+  width: 50px;
+  margin-right: 40px;
+}
+
+.detailPage {
+  text-align: left;
+  padding: 30px;
+}
+
+.stockDescription {
+  padding-top: 25px;
+}
+
+a {
+  color: black;
+  text-decoration:none
+}
+
+.errorDiv {
+  display: none;
+  padding: 35px;
+}
+
+hr {
+  border: none;
+  height: 1px;
+  color: #333;
+  background-color: #333;
+}
+
+.newsCard {
+  max-width: 540px;
+  max-height: 160px;
 }
 
 </style>

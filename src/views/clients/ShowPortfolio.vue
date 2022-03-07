@@ -45,6 +45,7 @@
                   id="input-group-4"
                   label="Precio de compra:"
                   label-for="input-4"
+                  description="Se asume que el precio de compra introducido es en la moneda local del activo."
               >
                 <b-form-input
                     v-model="form.buyPrice"
@@ -106,7 +107,7 @@
       <b-tbody>
       <b-tr v-for="(item, index) in this.info" v-bind:key="index" >
         <!--Nombre-->
-        <a :href="'/stock/' + index">
+        <a :href="'/stock/' + index" target="_blank">
           <b-td v-if="infoFinances[index].quoteResponse.result[0].hasOwnProperty('longName')">{{ infoFinances[index].quoteResponse.result[0].longName}}</b-td>
           <b-td v-else>{{ infoFinances[index].quoteResponse.result[0].shortName}}</b-td>
         </a>
