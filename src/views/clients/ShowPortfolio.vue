@@ -197,7 +197,8 @@ export default {
   computed: {
 
     ISINState() {
-      return this.form.nombre_ISIN.length > 0
+      let isin_name = this.form.nombre_ISIN.split('-')
+      return this.form.nombre_ISIN.length > 0 && isin_name.length == 2
     },
     quantityState() {
       return this.form.quantity > 0
