@@ -37,10 +37,10 @@
       </div>
       <div class="control-section" v-if="showPieChart">
         <div align='center'>
-          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'% ' + this.id + ' sobre tu cartera'"
+          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'%' + this.id + ' sobre tu cartera'"
                                 :legendSettings='legendSettings' :tooltip='tooltip'>
             <e-accumulation-series-collection>
-              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
 
             </e-accumulation-series-collection>
           </ejs-accumulationchart>

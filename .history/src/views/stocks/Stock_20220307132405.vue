@@ -37,10 +37,10 @@
       </div>
       <div class="control-section" v-if="showPieChart">
         <div align='center'>
-          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'% ' + this.id + ' sobre tu cartera'"
+          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'%' + this.id + ' sobre tu cartera'"
                                 :legendSettings='legendSettings' :tooltip='tooltip'>
             <e-accumulation-series-collection>
-              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
 
             </e-accumulation-series-collection>
           </ejs-accumulationchart>
@@ -133,9 +133,9 @@ export default {
       
       let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
       let restPercentage = (100 - percentageOfParticularStock).toFixed(2)
-      this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
-      this.pieChartData.push({'x': "Resto de la cartera", 'y': restPercentage, text: "Resto de la cartera"})
-      this.showPieChart = true
+      this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: key + " hola"})
+      
+
     },
     async getData() {
       try {
