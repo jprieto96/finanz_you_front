@@ -7,6 +7,20 @@
         <h1 v-else>{{ this.id }}</h1>
       </div>
     </a>
+    <div>
+      <ejs-stockchart
+          id="stockchartcontainer"
+          :primaryXAxis="primaryXAxis"
+          :primaryYAxis="primaryYAxis"
+          :title="this.id + ' Stock Price'">
+        <e-stockchart-series-collection>
+          <e-stockchart-series :dataSource="seriesData" type="Candle"  volume='volume' xName='date' low='low' high='high' open='open' close='close'></e-stockchart-series>
+        </e-stockchart-series-collection>
+      </ejs-stockchart>
+    </div>
+    <br>
+    <hr>
+    <br>
     <p class="stockDescription" v-if="this.infoStock.hasOwnProperty('longBusinessSummary')">
       {{ this.infoStock.longBusinessSummary }}
     </p>
@@ -52,6 +66,15 @@
 
 <script>
 import axios from "axios";
+import Vue from "vue";
+import { chartData } from "./datasource.js";
+import {
+  StockChartPlugin, DateTime, CandleSeries, Tooltip, Crosshair, RangeTooltip, LineSeries,SplineSeries,
+  HiloOpenCloseSeries, HiloSeries, RangeAreaSeries, Trendlines, EmaIndicator, RsiIndicator,BollingerBands, TmaIndicator,
+  MomentumIndicator, SmaIndicator, AtrIndicator, AccumulationDistributionIndicator, MacdIndicator, StochasticIndicator, Export
+} from "@syncfusion/ej2-vue-charts";
+
+Vue.use(StockChartPlugin);
 
 export default {
   name: "Stock",
@@ -70,8 +93,22 @@ export default {
         title: '',
         message: '',
         variant: '',
+      },
+      seriesData: chartData,
+      primaryXAxis: {
+        valueType: "DateTime",
+        majorGridLines: { color: "transparent" },
+      },
+      primaryYAxis: {
+        majorTickLines: { color: "transparent", width: 0 }
       }
-    }
+    };
+  },
+  provide: {
+    stockChart: [
+      DateTime, Tooltip, Crosshair, RangeTooltip, LineSeries, SplineSeries, CandleSeries, HiloOpenCloseSeries, HiloSeries, RangeAreaSeries, Trendlines, EmaIndicator, RsiIndicator,
+      BollingerBands, TmaIndicator, MomentumIndicator, SmaIndicator, AtrIndicator, AccumulationDistributionIndicator,  MacdIndicator, StochasticIndicator, Export
+    ]
   },
   created() {
     this.getData()
@@ -120,6 +157,13 @@ export default {
       this.modal.message = message
       this.modal.title = "¡Operación Fallida!"
       this.modal.variant = 'warning'
+    },
+    tooltipRender: function(args){
+      if (args.text.split('<br/>')[4]) {
+        let target = parseInt(args.text.split('<br/>')[4].split('<b>')[1].split('</b>')[0]);
+        let value  = (target / 100000000).toFixed(1) + 'B';
+        args.text = args.text.replace(args.text.split('<br/>')[4].split('<b>')[1].split('</b>')[0], value);
+      }
     }
   }
 }
