@@ -13,7 +13,7 @@
     </div>
     <div class="control-section" v-if="showStocksChart">
       <div align='center'>
-        <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer2' :title="'% activos de tu cartera'"
+        <ejs-accumulationchart style='display:inline-block' :load='loadStocks' align='center' id='chartcontainer2' :title="'% activos de tu cartera'"
                                :legendSettings='legendSettings' :tooltip='tooltip'>
           <e-accumulation-series-collection>
             <e-accumulation-series :dataSource='pieChartDataStocks' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
@@ -89,7 +89,7 @@ export default Vue.extend({
         }
         
         for(let stock in this.infoFinances) {
-          this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
+          this.pieChartData.push({'x': this.id, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
         }
         
         this.showStocksChart = true

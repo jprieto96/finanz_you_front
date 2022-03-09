@@ -89,7 +89,8 @@ export default Vue.extend({
         }
         
         for(let stock in this.infoFinances) {
-          this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
+          let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
+          this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
         }
         
         this.showStocksChart = true

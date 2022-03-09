@@ -75,23 +75,28 @@ export default Vue.extend({
   methods: {
     getAllStocksChart() {
       if(Object.keys(this.info).length > 0 && Object.keys(this.infoFinances).length > 0) {
+        let marketValueStockDetail = 0
+        if(infoFinances[this.id].quoteResponse.result[0].currency === 'USD') {
+          marketValueStockDetail = (infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity) * 0.87
+        }
+        else {
+          marketValueStockDetail = infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity
+        }
+
         let totalMarketValue = 0
-        let marketByStock = {}
-        for(let stock in this.infoFinances) {
-          if(this.infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
-            marketByStock[stock] = (this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity) * 0.87
-            totalMarketValue += (this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity) * 0.87
+        for(let stock in infoFinances) {
+          if(infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
+            totalMarketValue += (infoFinances[stock].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity) * 0.87
           }
           else {
-            marketByStock[stock] = this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
-            totalMarketValue += this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
+            totalMarketValue += infoFinances[stock].quoteResponse.result[0].regularMarketPrice * stockInfo.quantity
           }
         }
         
-        for(let stock in this.infoFinances) {
-          this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
-        }
-        
+        let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
+        let restPercentage = (100 - percentageOfParticularStock).toFixed(2)
+        this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
+        this.pieChartData.push({'x': "Resto de la cartera", 'y': restPercentage, text: "Resto de la cartera"})
         this.showStocksChart = true
       }
     },

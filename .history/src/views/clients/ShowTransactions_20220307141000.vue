@@ -38,7 +38,7 @@
     </b-table-simple>
     <br>
     <p class="empty_msg" v-if="showEmptyMsg">No hay ningún movimiento</p>
-    <div v-if="deleteOption && checked && !showEmptyMsg"><b-button
+    <div v-if="checked && !showEmptyMsg"><b-button
         v-b-modal.modal-delete-confirmed
         id="deleteConfirmedValue"
         pill variant="outline-danger"
@@ -116,7 +116,7 @@ export default {
               this.showEmptyMsg = this.info.length == 0
             })
             .catch((err) => {
-              this.showWarningModal(err.response.data)
+              this.showWarningModal("perro")
               this.showEmptyMsg = true
             }))
 
@@ -160,7 +160,6 @@ export default {
             localStorage.clear()
             this.showSuccessModal()
             this.getData();
-            this.deleteOption = false
           })
           .catch((err) => {
             //Aviso de que no se ha podido borrar.

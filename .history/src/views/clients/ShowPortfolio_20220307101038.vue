@@ -130,8 +130,7 @@
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
         <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
         <!--Valor mercado(EUR)-->
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
-        <b-td v-else>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity)).toFixed(2) + " €"}}</b-td>
+        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
         <!--Precio medio de compra-->
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
         <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €"}}</b-td>

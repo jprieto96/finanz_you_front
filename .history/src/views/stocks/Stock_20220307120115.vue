@@ -37,10 +37,10 @@
       </div>
       <div class="control-section" v-if="showPieChart">
         <div align='center'>
-          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'% ' + this.id + ' sobre tu cartera'"
+          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'%' + this.id + ' sobre tu cartera'"
                                 :legendSettings='legendSettings' :tooltip='tooltip'>
             <e-accumulation-series-collection>
-              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
 
             </e-accumulation-series-collection>
           </ejs-accumulationchart>
@@ -107,43 +107,15 @@ export default {
   },
   created() {
     this.getData()
-    this.getPieChart()
   },
   methods: {
-    getPieChart() {
-      let info = JSON.parse(localStorage.getItem("info"))
-      let infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
-      let marketValueStockDetail = 0
-      if(infoFinances[this.id].quoteResponse.result[0].currency === 'USD') {
-        marketValueStockDetail = (infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * info[this.id].quantity) * 0.87
-      }
-      else {
-        marketValueStockDetail = infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * info[this.id].quantity
-      }
-
-      let totalMarketValue = 0
-      for(let stock in infoFinances) {
-        if(infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
-          totalMarketValue += ((infoFinances[stock].quoteResponse.result[0].regularMarketPrice * info[stock].quantity) * 0.87)
-        }
-        else {
-          totalMarketValue += infoFinances[stock].quoteResponse.result[0].regularMarketPrice * info[stock].quantity
-        }
-      }
-      
-      let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
-      let restPercentage = (100 - percentageOfParticularStock).toFixed(2)
-      if(percentageOfParticularStock > 0){
-        this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
-      }
-      if(restPercentage > 0) {
-        this.pieChartData.push({'x': "Resto de la cartera", 'y': restPercentage, text: "Resto de la cartera"})
-      }
-      this.showPieChart = true
-    },
     async getData() {
       try {
-        let options = {
+
+        this.infoStock = JSON.parse(localStorage.getItem(this.id))
+
+        if(this.infoStock === null) {
+          let options = {
             method: 'GET',
             url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v11/finance/quoteSummary/' + this.id,
             params: {
@@ -153,9 +125,10 @@ export default {
               'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
               'x-rapidapi-key': this.apiKey
             }
-        };
-        let responseStockInfo = await axios.request(options)
-        this.infoStock = responseStockInfo.data.quoteSummary.result[0].assetProfile
+          };
+          let responseStockInfo = await axios.request(options)
+          this.infoStock = responseStockInfo.data.quoteSummary.result[0].assetProfile
+        }
       }
       catch(err) {
         console.log(err)
@@ -176,6 +149,8 @@ export default {
         this.showView = true
         console.log(err)
       }
+
+
     },
     showWarningModal(message) {
       this.$bvModal.show("modal")

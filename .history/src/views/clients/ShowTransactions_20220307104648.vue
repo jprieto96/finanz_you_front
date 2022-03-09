@@ -7,7 +7,6 @@
         id="deleteValue"
         variant="danger"
         pill
-        v-if="!showEmptyMsg"
         @click="deleteOption = !deleteOption"
     >Eliminar valor</b-button></div>
     <br>
@@ -37,8 +36,7 @@
       </b-tbody>
     </b-table-simple>
     <br>
-    <p class="empty_msg" v-if="showEmptyMsg">No hay ningún movimiento</p>
-    <div v-if="deleteOption && checked && !showEmptyMsg"><b-button
+    <div v-if="checked"><b-button
         v-b-modal.modal-delete-confirmed
         id="deleteConfirmedValue"
         pill variant="outline-danger"
@@ -48,9 +46,18 @@
       <b-modal id="modal-delete-confirmed" title="Confirmación para eliminar" cancel-title="Cancelar" ok-title="Estoy seguro/a" v-on:ok="onSubmit">
         <p class="my-4">¿Está seguro/a que quiere eliminar {{ checked.quantity }} uds de  {{ checked.stockName }} por {{ checked.buyPrice.toFixed(2) + "$" }} a fecha {{ getDate(checked.date) }}?</p>
       </b-modal>
-      <b-modal id="modal-1" title="BootstrapVue">
-        <p class="my-4">Hello from modal!</p>
-      </b-modal>
+
+    <div v-if="deleteDone && deleteConfirmed">
+      <b-alert variant="success" show>Se ha eliminado correctamente.</b-alert>
+    </div>
+    <div v-else-if="!deleteDone && deleteConfirmed">
+      <b-alert variant="warning" show>Error al eliminar.</b-alert>
+    </div>
+    <p class="empty_msg" v-if="showEmptyMsg">No hay ningún movimiento</p>
+    <b-modal id="modal-1" title="BootstrapVue">
+      <p class="my-4">Hello from modal!</p>
+    </b-modal>
+
     </div>
 
     <ModalMessage
@@ -155,16 +162,15 @@ export default {
 
       axios
           .post( this.backURL + 'client/deleteTransaction/', transaction)
-          .then(() => {
+          .then(response => {
             //Aviso de que se ha borrado correctamente.
+            this.deleteDone = true;
             localStorage.clear()
-            this.showSuccessModal()
             this.getData();
-            this.deleteOption = false
           })
           .catch((err) => {
             //Aviso de que no se ha podido borrar.
-            this.showWarningModal("Error al eliminar")
+            this.deleteDone = false;
             console.log(err)
           })
     }

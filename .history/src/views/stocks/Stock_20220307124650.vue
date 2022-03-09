@@ -37,10 +37,10 @@
       </div>
       <div class="control-section" v-if="showPieChart">
         <div align='center'>
-          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'% ' + this.id + ' sobre tu cartera'"
+          <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="'%' + this.id + ' sobre tu cartera'"
                                 :legendSettings='legendSettings' :tooltip='tooltip'>
             <e-accumulation-series-collection>
-              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
 
             </e-accumulation-series-collection>
           </ejs-accumulationchart>
@@ -111,35 +111,24 @@ export default {
   },
   methods: {
     getPieChart() {
-      let info = JSON.parse(localStorage.getItem("info"))
-      let infoFinances = JSON.parse(localStorage.getItem("infoFinances"))
-      let marketValueStockDetail = 0
-      if(infoFinances[this.id].quoteResponse.result[0].currency === 'USD') {
-        marketValueStockDetail = (infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * info[this.id].quantity) * 0.87
-      }
-      else {
-        marketValueStockDetail = infoFinances[this.id].quoteResponse.result[0].regularMarketPrice * info[this.id].quantity
-      }
-
-      let totalMarketValue = 0
-      for(let stock in infoFinances) {
-        if(infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
-          totalMarketValue += ((infoFinances[stock].quoteResponse.result[0].regularMarketPrice * info[stock].quantity) * 0.87)
+      let stockInfo = JSON.parse(localStorage.getItem("info"))[this.id]
+      let marketValueStockDetail = JSON.parse(localStorage.getItem("infoFinances"))[this.id].quoteResponse.result[0].regularMarketPrice * item.quantity
+      /*let sectors = new Map()
+      for (let index in this.info) {
+        if(sectors.has(this.info[index]['sector'])) {
+          sectors.set(this.info[index]['sector'], sectors.get(this.info[index]['sector']) + 1)
         }
         else {
-          totalMarketValue += infoFinances[stock].quoteResponse.result[0].regularMarketPrice * info[stock].quantity
+          sectors.set(this.info[index]['sector'], 1)
         }
       }
-      
-      let percentageOfParticularStock = ((marketValueStockDetail / totalMarketValue) * 100).toFixed(2)
-      let restPercentage = (100 - percentageOfParticularStock).toFixed(2)
-      if(percentageOfParticularStock > 0){
-        this.pieChartData.push({'x': this.id, 'y': percentageOfParticularStock, text: this.id})
+
+      for (let [key, value] of sectors) {
+        this.pieChartData.push({'x': key, 'y': (value/Object.values(this.info).length * 100).toFixed(2), text: key + " " + value})
       }
-      if(restPercentage > 0) {
-        this.pieChartData.push({'x': "Resto de la cartera", 'y': restPercentage, text: "Resto de la cartera"})
-      }
-      this.showPieChart = true
+
+      if(sectors.size !== 0) this.showPieChart = true*/
+
     },
     async getData() {
       try {
