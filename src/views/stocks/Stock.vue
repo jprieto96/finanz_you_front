@@ -1,10 +1,11 @@
+h4
 <template>
-  <div class="detailPage" v-if="showView">
+  <div class="container detailPage" v-if="showView">
     <a :href="infoStock.website" target="_blank">
       <div class="titleStock">
         <b-img
           v-if="
-            img !== null &&
+            this.img !== null &&
             this.img.hasOwnProperty('branding') &&
             this.img.branding.logo_url !== null
           "
@@ -30,73 +31,80 @@
     <div class="container">
       <div class="row">
         <div
-          v-if="this.news.length > 0"
-          class="news col-lg-6 col-md-6 col-sm-12"
+          class="control-section col-lg-6 col-md-6 col-sm-12"
+          v-if="showPieChart"
         >
-          <h4><b>3 últimas noticias</b></h4>
-          <br />
-          <b-card
-            v-for="item in news"
-            v-bind:key="item"
-            no-body
-            class="overflow-auto newsCard text-center mb-3 card-item"
-          >
-            <b-row no-gutters>
-              <b-col md="3">
-                <b-card-img
-                  :src="item.image_url"
-                  :alt="id"
-                  class="rounded-0"
-                ></b-card-img>
-              </b-col>
-              <b-col md="9">
-                <b-card-body :title="item.title">
-                  <b-card-text>
-                    {{ item.description }}
-                  </b-card-text>
-                </b-card-body>
-              </b-col>
-            </b-row>
-          </b-card>
+          <div align="center">
+            <ejs-accumulationchart
+              style="display: block"
+              :load="load"
+              align="center"
+              id="chartcontainer"
+              :title="'% ' + this.id + ' sobre tu cartera'"
+              :legendSettings="legendSettings"
+              :tooltip="tooltip"
+            >
+              <e-accumulation-series-collection>
+                <e-accumulation-series
+                  :dataSource="pieChartData"
+                  xName="x"
+                  yName="y"
+                  startAngle="60"
+                  :dataLabel="dataLabel"
+                  innerRadius="0%"
+                  name="% cartera"
+                >
+                </e-accumulation-series>
+              </e-accumulation-series-collection>
+            </ejs-accumulationchart>
+          </div>
         </div>
-        <div class="col-lg-6 col-md-6 col-sm-12">
-          <div class="control-section" v-if="showPieChart">
-            <div align="center">
-              <ejs-accumulationchart
-                style="display: block"
-                :load="load"
-                align="center"
-                id="chartcontainer"
-                :title="'% ' + this.id + ' sobre tu cartera'"
-                :legendSettings="legendSettings"
-                :tooltip="tooltip"
-              >
-                <e-accumulation-series-collection>
-                  <e-accumulation-series
-                    :dataSource="pieChartData"
-                    xName="x"
-                    yName="y"
-                    startAngle="60"
-                    :dataLabel="dataLabel"
-                    innerRadius="0%"
-                    name="% cartera"
-                  >
-                  </e-accumulation-series>
-                </e-accumulation-series-collection>
-              </ejs-accumulationchart>
-            </div>
+        <br />
+        <div
+          class="recommendation-section col-lg-6 col-md-6 col-sm-12"
+          align="center"
+        >
+          <div id="chart" v-if="showRecommendationGraph">
+            <h5><b>Tendencia de recomendaciones</b></h5>
+            <apexchart
+              type="bar"
+              height="350"
+              :options="chartOptions"
+              :series="series"
+            ></apexchart>
           </div>
+          <div v-else><h5><b>No existen recomendaciones para este valor</b></h5></div>
+        </div>
+      </div>
+      <br />
+      <hr v-if="this.news.length > 0" />
+      <br />
+      <div class="row">
+        <div v-if="this.news.length > 0">
+          <h4><b>{{ this.news.length }} últimas noticias</b></h4>
           <br />
-          <div class="recommendation-section" align="center">
-            <div id="chart" v-if="showRecommendationGraph">
-              <apexchart
-                type="bar"
-                height="350"
-                :options="chartOptions"
-                :series="series"
-              ></apexchart>
-            </div>
-          </div>
+          <b-list-group>
+            <b-list-group-item
+              v-for="item in news"
+              v-bind:key="item"
+              :href="item.article_url"
+              target="_blank"
+              class="align-items-start"
+            >
+              <div class="itemNews">
+                <img :src="item.image_url" :alt="id" class="imgNews" />
+                <div class="newsText">
+                  <p>
+                    <b>{{ item.title }}</b>
+                  </p>
+                  <p>{{ item.description.split(".")[0] }}.</p>
+                  <a class="linkNews" :href="item.article_url" target="_blank"
+                    ><p>Ver noticia completa...</p></a
+                  >
+                </div>
+              </div>
+            </b-list-group-item>
+          </b-list-group>
         </div>
       </div>
     </div>
@@ -400,36 +408,45 @@ export default {
 
     async getRecommendationData() {
       this.chartOptions.xaxis.categories = this.getLast4Months();
-      
-      try{
+
+      try {
         //series[0].data son los valores de strongSell
-        for (let i=0; i<4; i++){
-          this.series[0].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].strongSell);
+        for (let i = 0; i < 4; i++) {
+          this.series[0].data.unshift(
+            this.infoRecommendationStock.recommendationTrend.trend[i].strongSell
+          );
         }
 
         //series[1].data son los valores de sell
-        for (let i=0; i<4; i++){
-          this.series[1].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].sell);
+        for (let i = 0; i < 4; i++) {
+          this.series[1].data.unshift(
+            this.infoRecommendationStock.recommendationTrend.trend[i].sell
+          );
         }
 
         //series[2].data son los valores de hold
-        for (let i=0; i<4; i++){
-          this.series[2].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].hold);
+        for (let i = 0; i < 4; i++) {
+          this.series[2].data.unshift(
+            this.infoRecommendationStock.recommendationTrend.trend[i].hold
+          );
         }
 
         //series[3].data son los valores de buy
-        for (let i=0; i<4; i++){
-          this.series[3].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].buy);
+        for (let i = 0; i < 4; i++) {
+          this.series[3].data.unshift(
+            this.infoRecommendationStock.recommendationTrend.trend[i].buy
+          );
         }
 
         //series[4].data son los valores de strongBuy
-        for (let i=0; i<4; i++){
-          this.series[4].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].strongBuy);
+        for (let i = 0; i < 4; i++) {
+          this.series[4].data.unshift(
+            this.infoRecommendationStock.recommendationTrend.trend[i].strongBuy
+          );
         }
         this.showRecommendationGraph = true;
-      }
-      catch(err){
-          console.log(err);
+      } catch (err) {
+        console.log(err);
       }
     },
   },
@@ -472,16 +489,29 @@ hr {
   color: #333;
   background-color: #333;
 }
+.newsCard {
+  display: flex;
+  height: 150px;
+  margin: 25px;
+}
 
-.mid-section {
+.imgNews {
+  height: 150px;
+  width: 200px;
+  margin: 20px;
+}
+
+.newsText {
+  font-size: 15px;
+  margin-top: 20px;
+}
+
+.linkNews {
+  color: blue;
+}
+
+.itemNews {
   display: flex;
 }
 
-.news {
-  width: 50%;
-}
-.newsCard {
-  max-width: 540px;
-  max-height: 160px;
-}
 </style>
