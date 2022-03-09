@@ -113,7 +113,7 @@ export default {
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
-              this.showEmptyMsg = this.info.length == 0
+              this.showEmptyMsg = this.info.length === 0
             })
             .catch((err) => {
               this.showWarningModal(err.response.data)
@@ -129,7 +129,7 @@ export default {
             })
       }
       else {
-        this.showView = this.info.length != 0
+        this.showView = this.info.length >= 0
         this.showEmptyMsg = this.info.length == 0
       }
     },
