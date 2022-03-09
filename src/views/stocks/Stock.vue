@@ -3,7 +3,11 @@
     <a :href="infoStock.website" target="_blank">
       <div class="titleStock">
         <b-img
-          v-if="img !== null && this.img.hasOwnProperty('branding') && this.img.branding.logo_url !== null"
+          v-if="
+            img !== null &&
+            this.img.hasOwnProperty('branding') &&
+            this.img.branding.logo_url !== null
+          "
           class="logo"
           :src="img.branding.logo_url + '?apikey=' + apiKeyForImage"
           fluid
@@ -59,7 +63,7 @@
           <div class="control-section" v-if="showPieChart">
             <div align="center">
               <ejs-accumulationchart
-                style="display: inline-block"
+                style="display: block"
                 :load="load"
                 align="center"
                 id="chartcontainer"
@@ -84,7 +88,7 @@
           </div>
           <br />
           <div class="recommendation-section" align="center">
-            <div id="chart">
+            <div id="chart" v-if="showRecommendationGraph">
               <apexchart
                 type="bar"
                 height="350"
@@ -138,9 +142,11 @@ export default {
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       infoStock: {},
+      infoRecommendationStock: {},
       id: this.$route.params.id,
       showView: false,
       showPieChart: false,
+      showRecommendationGraph: false,
       pieChartData: [],
       news: [],
       img: null,
@@ -162,28 +168,26 @@ export default {
 
       tooltip: { enable: true, format: "${point.x} : <b>${point.y}%</b>" },
 
-      months: [],
-
       series: [
         {
           name: "Venta-Fuerte",
-          data: [44, 55, 41, 67, 22, 43],
+          data: [],
         },
         {
           name: "Venta",
-          data: [13, 23, 20, 8, 13, 27],
+          data: [],
         },
         {
           name: "Mantener",
-          data: [11, 17, 15, 15, 21, 14],
+          data: [],
         },
         {
           name: "Compra",
-          data: [21, 7, 25, 13, 22, 8],
+          data: [],
         },
         {
           name: "Compra-Fuerte",
-          data: [5, 7, 11, 12, 17, 3],
+          data: [],
         },
       ],
 
@@ -218,17 +222,12 @@ export default {
           },
         },
         xaxis: {
-          type: "datetime",
-          categories: [
-            "01/01/2011 GMT",
-            "01/02/2011 GMT",
-            "01/03/2011 GMT",
-            "01/04/2011 GMT",
-          ],
+          type: "string",
+          categories: [],
         },
         legend: {
           position: "right",
-          offsetY: 40,
+          offsetY: 100,
         },
         fill: {
           opacity: 1,
@@ -247,7 +246,6 @@ export default {
   created() {
     this.getData();
     this.getPieChart();
-    this.getRecommendationData();
   },
   methods: {
     getPieChart() {
@@ -299,7 +297,6 @@ export default {
         });
       }
       this.showPieChart = true;
-      console.log(this.showPieChart);
     },
     async getData() {
       try {
@@ -321,6 +318,8 @@ export default {
         let responseStockInfo = await axios.request(options);
         this.infoStock =
           responseStockInfo.data.quoteSummary.result[0].assetProfile;
+        this.infoRecommendationStock =
+          responseStockInfo.data.quoteSummary.result[0];
       } catch (err) {
         console.log(err);
         document.querySelector(".errorDiv").style.display = "block";
@@ -347,12 +346,10 @@ export default {
         if (responseNews.data.status !== "NOT_FOUND") {
           this.news = responseNews.data.results;
         }
-
-        console.log(this.img)
-        console.log(this.new)
-
+        this.getRecommendationData();
         this.showView = true;
       } catch (err) {
+        this.getRecommendationData();
         this.showView = true;
         console.log(err);
       }
@@ -392,24 +389,48 @@ export default {
       var last4Months = [];
 
       for (let i = 0; i < 4; i++) {
-        if((today.getMonth() - i) <0){
-            last4Months.push(
-            monthNames[today.getMonth() - i + 12]
-          );
-        }
-        else{
-          last4Months.push(
-            monthNames[today.getMonth() - i]
-          );
+        if (today.getMonth() - i < 0) {
+          last4Months.unshift(monthNames[today.getMonth() - i + 12]);
+        } else {
+          last4Months.unshift(monthNames[today.getMonth() - i]);
         }
       }
-      console.log(last4Months)
       return last4Months;
     },
 
     async getRecommendationData() {
-      this.months = this.getLast4Months();
-      console.log(this.months);
+      this.chartOptions.xaxis.categories = this.getLast4Months();
+      
+      try{
+        //series[0].data son los valores de strongSell
+        for (let i=0; i<4; i++){
+          this.series[0].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].strongSell);
+        }
+
+        //series[1].data son los valores de sell
+        for (let i=0; i<4; i++){
+          this.series[1].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].sell);
+        }
+
+        //series[2].data son los valores de hold
+        for (let i=0; i<4; i++){
+          this.series[2].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].hold);
+        }
+
+        //series[3].data son los valores de buy
+        for (let i=0; i<4; i++){
+          this.series[3].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].buy);
+        }
+
+        //series[4].data son los valores de strongBuy
+        for (let i=0; i<4; i++){
+          this.series[4].data.unshift(this.infoRecommendationStock.recommendationTrend.trend[i].strongBuy);
+        }
+        this.showRecommendationGraph = true;
+      }
+      catch(err){
+          console.log(err);
+      }
     },
   },
 };
