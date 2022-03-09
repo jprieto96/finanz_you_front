@@ -3,7 +3,7 @@
     <a :href="infoStock.website" target="_blank">
       <div class="titleStock">
         <b-img
-          v-if="img !== null && this.img.branding.logo_url !== null"
+          v-if="img !== null && this.img.hasOwnProperty('branding') && this.img.branding.logo_url !== null"
           class="logo"
           :src="img.branding.logo_url + '?apikey=' + apiKeyForImage"
           fluid
@@ -337,13 +337,20 @@ export default {
         let responseNews = await axios.get(
           "https://api.polygon.io/v2/reference/news?ticker=" +
             this.id +
-            "&limit=3&apiKey=" +
+            "&limit=5&apiKey=" +
             this.apiKeyForImage
         );
+
         if (responseForPic.data.status !== "NOT_FOUND") {
           this.img = responseForPic.data.results;
         }
-        this.news = responseNews.data.results;
+        if (responseNews.data.status !== "NOT_FOUND") {
+          this.news = responseNews.data.results;
+        }
+
+        console.log(this.img)
+        console.log(this.new)
+
         this.showView = true;
       } catch (err) {
         this.showView = true;
