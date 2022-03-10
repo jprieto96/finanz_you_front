@@ -57,15 +57,22 @@
         class="custom-modal"
     ></ModalMessage>
   </div>
+  <div class="loading" v-else>
+     <loading :active="true"
+              :can-cancel="false"
+              :is-full-page="false"/>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 export default {
   name: "Login",
-  components: {ModalMessage},
+  components: {ModalMessage, Loading},
   data() {
     return {
       backURL: process.env.VUE_APP_BACK_URL,
