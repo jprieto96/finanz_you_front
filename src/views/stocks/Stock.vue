@@ -1,126 +1,135 @@
 h4
 <template>
-  <div class="container detailPage" v-if="showView">
-    <a :href="infoStock.website" target="_blank">
-      <div class="titleStock">
-        <b-img
-          v-if="
-            this.img !== null &&
-            this.img.hasOwnProperty('branding') &&
-            this.img.branding.logo_url !== null
-          "
-          class="logo"
-          :src="img.branding.logo_url + '?apikey=' + apiKeyForImage"
-          fluid
-          alt="Responsive image"
-        ></b-img>
-        <h1 v-if="img !== null">{{ this.img.name }}</h1>
-        <h1 v-else>{{ this.id }}</h1>
-      </div>
-    </a>
-    <p
-      class="stockDescription"
-      v-if="this.infoStock.hasOwnProperty('longBusinessSummary')"
-    >
-      {{ this.infoStock.longBusinessSummary }}
-    </p>
-    <p class="stockDescription" v-else>Descripción no disponible</p>
-    <br />
-    <hr />
-    <br />
-    <div class="container">
-      <div class="row">
-        <div
-          class="control-section col-lg-6 col-md-6 col-sm-12"
-          v-if="showPieChart"
-        >
-          <div align="center">
-            <ejs-accumulationchart
-              style="display: block"
-              :load="load"
-              align="center"
-              id="chartcontainer"
-              :title="'% ' + this.id + ' sobre tu cartera'"
-              :legendSettings="legendSettings"
-              :tooltip="tooltip"
-            >
-              <e-accumulation-series-collection>
-                <e-accumulation-series
-                  :dataSource="pieChartData"
-                  xName="x"
-                  yName="y"
-                  startAngle="60"
-                  :dataLabel="dataLabel"
-                  innerRadius="0%"
-                  name="% cartera"
-                >
-                </e-accumulation-series>
-              </e-accumulation-series-collection>
-            </ejs-accumulationchart>
+  <div>
+    <div class="container detailPage" v-if="showView">
+      <a :href="infoStock.website" target="_blank">
+        <div class="titleStock">
+          <b-img
+            v-if="
+              this.img !== null &&
+              this.img.hasOwnProperty('branding') &&
+              this.img.branding.logo_url !== null
+            "
+            class="logo"
+            :src="img.branding.logo_url + '?apikey=' + apiKeyForImage"
+            fluid
+            alt="Responsive image"
+          ></b-img>
+          <h1 v-if="img !== null">{{ this.img.name }}</h1>
+          <h1 v-else>{{ this.id }}</h1>
+        </div>
+      </a>
+      <p
+        class="stockDescription"
+        v-if="this.infoStock.hasOwnProperty('longBusinessSummary')"
+      >
+        {{ this.infoStock.longBusinessSummary }}
+      </p>
+      <p class="stockDescription" v-else>Descripción no disponible</p>
+      <br />
+      <hr />
+      <br />
+      <div class="container">
+        <div class="row">
+          <div
+            class="control-section col-lg-6 col-md-6 col-sm-12"
+            v-if="showPieChart"
+          >
+            <div align="center">
+              <ejs-accumulationchart
+                style="display: block"
+                :load="load"
+                align="center"
+                id="chartcontainer"
+                :title="'% ' + this.id + ' sobre tu cartera'"
+                :legendSettings="legendSettings"
+                :tooltip="tooltip"
+              >
+                <e-accumulation-series-collection>
+                  <e-accumulation-series
+                    :dataSource="pieChartData"
+                    xName="x"
+                    yName="y"
+                    startAngle="60"
+                    :dataLabel="dataLabel"
+                    innerRadius="0%"
+                    name="% cartera"
+                  >
+                  </e-accumulation-series>
+                </e-accumulation-series-collection>
+              </ejs-accumulationchart>
+            </div>
+          </div>
+          <br />
+          <div
+            class="recommendation-section col-lg-6 col-md-6 col-sm-12"
+            align="center"
+          >
+            <div id="chart" v-if="showRecommendationGraph">
+              <h5><b>Tendencia de recomendaciones</b></h5>
+              <apexchart
+                type="bar"
+                height="350"
+                :options="chartOptions"
+                :series="series"
+              ></apexchart>
+            </div>
+            <div v-else>
+              <h5><b>No existen recomendaciones para este valor</b></h5>
+            </div>
           </div>
         </div>
         <br />
-        <div
-          class="recommendation-section col-lg-6 col-md-6 col-sm-12"
-          align="center"
-        >
-          <div id="chart" v-if="showRecommendationGraph">
-            <h5><b>Tendencia de recomendaciones</b></h5>
-            <apexchart
-              type="bar"
-              height="350"
-              :options="chartOptions"
-              :series="series"
-            ></apexchart>
-          </div>
-          <div v-else><h5><b>No existen recomendaciones para este valor</b></h5></div>
-        </div>
-      </div>
-      <br />
-      <hr v-if="this.news.length > 0" />
-      <br />
-      <div class="row">
-        <div v-if="this.news.length > 0">
-          <h4><b>{{ this.news.length }} últimas noticias</b></h4>
-          <br />
-          <b-list-group>
-            <b-list-group-item
-              v-for="item in news"
-              v-bind:key="item"
-              :href="item.article_url"
-              target="_blank"
-              class="align-items-start"
-            >
-              <div class="itemNews">
-                <img :src="item.image_url" :alt="id" class="imgNews" />
-                <div class="newsText">
-                  <p>
-                    <b>{{ item.title }}</b>
-                  </p>
-                  <p>{{ item.description }}</p>
-                  <a class="linkNews" :href="item.article_url" target="_blank"
-                    ><p>Ver noticia completa...</p></a
-                  >
+        <hr v-if="this.news.length > 0" />
+        <br />
+        <div class="row">
+          <div v-if="this.news.length > 0">
+            <h4>
+              <b>{{ this.news.length }} últimas noticias</b>
+            </h4>
+            <br />
+            <b-list-group>
+              <b-list-group-item
+                v-for="item in news"
+                v-bind:key="item"
+                :href="item.article_url"
+                target="_blank"
+                class="align-items-start"
+              >
+                <div class="itemNews">
+                  <img :src="item.image_url" :alt="id" class="imgNews" />
+                  <div class="newsText">
+                    <p>
+                      <b>{{ item.title }}</b>
+                    </p>
+                    <p>{{ item.description }}</p>
+                    <a class="linkNews" :href="item.article_url" target="_blank"
+                      ><p>Ver noticia completa...</p></a
+                    >
+                  </div>
                 </div>
-              </div>
-            </b-list-group-item>
-          </b-list-group>
+              </b-list-group-item>
+            </b-list-group>
+          </div>
         </div>
       </div>
-    </div>
-    <b-modal id="modal-1" title="BootstrapVue">
-      <p class="my-4">Hello from modal!</p>
-    </b-modal>
+      <b-modal id="modal-1" title="BootstrapVue">
+        <p class="my-4">Hello from modal!</p>
+      </b-modal>
 
-    <ModalMessage
-      :message="modal.message"
-      :title="modal.title"
-      :variant="modal.variant"
-      class="custom-modal"
-    ></ModalMessage>
-  </div>
-  <div class="errorDiv" v-else>
-    <h3>No hay información detallada sobre este activo</h3>
+      <ModalMessage
+        :message="modal.message"
+        :title="modal.title"
+        :variant="modal.variant"
+        class="custom-modal"
+      ></ModalMessage>
+    </div>
+    <div class="errorDiv" v-else>
+      <h3>No hay información detallada sobre este activo</h3>
+    </div>
+    <div class="loading" v-if="isLoading">
+      <loading :active="true" :can-cancel="false" :is-full-page="false" />
+    </div>
   </div>
 </template>
 
@@ -135,6 +144,8 @@ import {
 import Vue from "vue";
 import axios from "axios";
 import VueApexCharts from "vue-apexcharts";
+import Loading from "vue-loading-overlay";
+import "vue-loading-overlay/dist/vue-loading.css";
 
 Vue.use(AccumulationChartPlugin);
 
@@ -142,6 +153,7 @@ export default {
   name: "Stock",
   components: {
     apexchart: VueApexCharts,
+    Loading,
   },
   data() {
     return {
@@ -149,6 +161,7 @@ export default {
       apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
+      isLoading: true,
       infoStock: {},
       infoRecommendationStock: {},
       id: this.$route.params.id,
@@ -328,8 +341,10 @@ export default {
           responseStockInfo.data.quoteSummary.result[0].assetProfile;
         this.infoRecommendationStock =
           responseStockInfo.data.quoteSummary.result[0];
+        this.isLoading = false;
       } catch (err) {
         console.log(err);
+        this.isLoading = false;
         document.querySelector(".errorDiv").style.display = "block";
         return;
       }
@@ -513,5 +528,4 @@ hr {
 .itemNews {
   display: flex;
 }
-
 </style>
