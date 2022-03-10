@@ -23,17 +23,25 @@
       </div>
     </div>
   </div>
+  <div class="loading" v-else>
+     <loading :active="true"
+              :can-cancel="false"
+              :is-full-page="false"/>
+  </div>
 </template>
 
 <script>
 import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
 import Vue from "vue";
 import axios from "axios";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 Vue.use(AccumulationChartPlugin);
 
 export default Vue.extend({
   name: "ClientHome",
+  components: {Loading},
   data() {
     return {
       apiKey: process.env.VUE_APP_APIKEY,
