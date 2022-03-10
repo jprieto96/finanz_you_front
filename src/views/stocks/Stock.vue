@@ -97,7 +97,7 @@ h4
                   <p>
                     <b>{{ item.title }}</b>
                   </p>
-                  <p>{{ item.description.split(".")[0] }}.</p>
+                  <p>{{ item.description }}</p>
                   <a class="linkNews" :href="item.article_url" target="_blank"
                     ><p>Ver noticia completa...</p></a
                   >
@@ -315,7 +315,7 @@ export default {
             this.id,
           params: {
             modules:
-              "assetProfile,financialData,recommendationTrend,incomeStatementHistory, ",
+              "assetProfile,financialData,recommendationTrend,incomeStatementHistory",
           },
           headers: {
             "x-rapidapi-host":
