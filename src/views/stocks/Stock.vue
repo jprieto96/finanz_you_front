@@ -29,6 +29,15 @@ h4
       <br />
       <hr />
       <br />
+      <div id="chart">
+        <apexchart
+          type="line"
+          height="350"
+          :options="chartOptionsLineChart"
+          :series="seriesLineChart"
+        ></apexchart>
+      </div>
+      <br />
       <div class="container">
         <div class="row">
           <div
@@ -78,7 +87,12 @@ h4
               ></apexchart>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12" v-else>
-              <h5><b>No se pueden obtener las recomendaciones porque no existen para este valor</b></h5>
+              <h5>
+                <b
+                  >No se pueden obtener las recomendaciones porque no existen
+                  para este valor</b
+                >
+              </h5>
             </div>
           </div>
         </div>
@@ -170,6 +184,7 @@ export default {
       id: this.$route.params.id,
       showView: false,
       showPieChart: false,
+      showLineChart: false,
       showRecommendationGraph: false,
       pieChartData: [],
       news: [],
@@ -257,6 +272,71 @@ export default {
           opacity: 1,
         },
       },
+
+      seriesLineChart: [
+        {
+          name: "Rentabilidad - %",
+          data: [28, 29, 33, 36, 32, 32, 33],
+        },
+      ],
+      chartOptionsLineChart: {
+        chart: {
+          height: 350,
+          type: "line",
+          dropShadow: {
+            enabled: true,
+            color: "#000",
+            top: 18,
+            left: 7,
+            blur: 10,
+            opacity: 0.2,
+          },
+          toolbar: {
+            show: true,
+          },
+        },
+        colors: ["#77B6EA", "#545454"],
+        dataLabels: {
+          enabled: true,
+        },
+        stroke: {
+          curve: "smooth",
+        },
+        title: {
+          text: "Rentabilidad del valor en tu cartera",
+          align: "left",
+        },
+        grid: {
+          borderColor: "#e7e7e7",
+          row: {
+            colors: ["#f3f3f3", "transparent"], // takes an array which will be repeated on columns
+            opacity: 0.5,
+          },
+        },
+        markers: {
+          size: 1,
+        },
+        xaxis: {
+          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+          title: {
+            text: "Month",
+          },
+        },
+        yaxis: {
+          title: {
+            text: "% Porcentaje",
+          },
+          min: 28,
+          max: 38,
+        },
+        legend: {
+          position: "top",
+          horizontalAlign: "right",
+          floating: true,
+          offsetY: -25,
+          offsetX: -5,
+        },
+      },
     };
   },
   provide: {
@@ -270,6 +350,7 @@ export default {
   created() {
     this.getData();
     this.getPieChart();
+    this.getCategoriesLineChart();
   },
   methods: {
     getPieChart() {
@@ -321,6 +402,36 @@ export default {
         });
       }
       this.showPieChart = true;
+    },
+    getCategoriesLineChart() {
+      let infoTransactions = JSON.parse(
+        localStorage.getItem("infoTransactions")
+      );
+      let categories = []
+      if (infoTransactions !== null) {
+        let trMinDate = new Date();
+        for (let i = 1; i < infoTransactions.length; i++) {
+          if (infoTransactions[i].stockID === this.id) {
+            trMinDate = new Date(
+              Math.min(trMinDate, new Date(infoTransactions[i].date))
+            );
+          }
+        }
+
+        let daysIntoStock = Math.floor(
+          (new Date().getTime() - trMinDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+        let n = Math.round(daysIntoStock / 6);
+        categories[0] = trMinDate;
+        for (let i = 1; i <= 5; i++) {
+          let res = new Date(categories[i - 1]);
+          res.setDate(res.getDate() + n);
+          categories[i] = res
+        }
+        categories[6] = new Date()
+      }
+
+      return categories
     },
     async getData() {
       try {
