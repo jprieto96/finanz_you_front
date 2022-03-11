@@ -60,6 +60,9 @@ h4
               </ejs-accumulationchart>
             </div>
           </div>
+          <div class="col-lg-6 col-md-6 col-sm-12" v-else>
+            <h5><b>Este activo no existe en tu cartera</b></h5>
+          </div>
           <br />
           <div
             class="recommendation-section col-lg-6 col-md-6 col-sm-12"
@@ -74,8 +77,8 @@ h4
                 :series="series"
               ></apexchart>
             </div>
-            <div v-else>
-              <h5><b>No existen recomendaciones para este valor</b></h5>
+            <div class="col-lg-6 col-md-6 col-sm-12" v-else>
+              <h5><b>No se pueden obtener las recomendaciones porque no existen para este valor</b></h5>
             </div>
           </div>
         </div>
