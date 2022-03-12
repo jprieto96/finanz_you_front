@@ -56,19 +56,27 @@
         :variant="modal.variant"
         class="custom-modal"
     ></ModalMessage>
+    <div class="loading" v-if="isLoading">
+     <loading :active="true"
+              :can-cancel="false"
+              :is-full-page="false"/>
+    </div>
   </div>
 </template>
 
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 export default {
   name: "Login",
-  components: {ModalMessage},
+  components: {ModalMessage, Loading},
   data() {
     return {
       backURL: process.env.VUE_APP_BACK_URL,
+      isLoading: false,
       form: {
         user: '',
         password: '',
@@ -102,6 +110,7 @@ export default {
       let newForm = {}
       newForm.username = this.form.user
       newForm.password = window.btoa(unescape(encodeURIComponent(this.form.password + "tfgPROT01")));
+      this.isLoading = true
       axios
           .post(this.backURL + 'login', newForm)
           .then(response => {
@@ -113,9 +122,11 @@ export default {
             this.showSuccessModal(response.data)
             this.resetForm()
             localStorage.clear()
+            this.isLoading = false
             window.location.href = '/client'
           })
           .catch((err) => {
+            this.isLoading = false
             this.showWarningModal(err.response.data)
           })
     },

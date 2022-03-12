@@ -11,6 +11,22 @@
         </ejs-accumulationchart>
       </div>
     </div>
+    <div class="control-section" v-if="showStocksChart">
+      <div align='center'>
+        <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer2' :title="'% activos de tu cartera'"
+                               :legendSettings='legendSettings' :tooltip='tooltip'>
+          <e-accumulation-series-collection>
+            <e-accumulation-series :dataSource='pieChartDataStocks' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+
+          </e-accumulation-series-collection>
+        </ejs-accumulationchart>
+      </div>
+    </div>
+  </div>
+  <div class="loading" v-else>
+     <loading :active="true"
+              :can-cancel="false"
+              :is-full-page="false"/>
   </div>
 </template>
 
@@ -18,11 +34,14 @@
 import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLegend, AccumulationDataLabel } from "@syncfusion/ej2-vue-charts";
 import Vue from "vue";
 import axios from "axios";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 Vue.use(AccumulationChartPlugin);
 
 export default Vue.extend({
   name: "ClientHome",
+  components: {Loading},
   data() {
     return {
       apiKey: process.env.VUE_APP_APIKEY,
@@ -30,7 +49,9 @@ export default Vue.extend({
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       showView: false,
       showPieChart: false,
+      showStocksChart:false,
       pieChartData: [],
+      pieChartDataStocks: [],
       infoFinances: {},
       info: null,
       dataLabel: {
@@ -60,7 +81,29 @@ export default Vue.extend({
     }
   },
   methods: {
-    getPieChart() {
+    getAllStocksChart() {
+      if(Object.keys(this.info).length > 0 && Object.keys(this.infoFinances).length > 0) {
+        let totalMarketValue = 0
+        let marketByStock = {}
+        for(let stock in this.infoFinances) {
+          if(this.infoFinances[stock].quoteResponse.result[0].currency === 'USD') {
+            marketByStock[stock] = (this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity) * 0.87
+            totalMarketValue += (this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity) * 0.87
+          }
+          else {
+            marketByStock[stock] = this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
+            totalMarketValue += this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
+          }
+        }
+        
+        for(let stock in this.infoFinances) {
+          this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
+        }
+        
+        this.showStocksChart = true
+      }
+    },
+    getSectorChart() {
       let sectors = new Map()
       for (let index in this.info) {
         if(sectors.has(this.info[index]['sector'])) {
@@ -105,7 +148,8 @@ export default Vue.extend({
 
       Promise.all(promises)
           .then(() => {
-            this.getPieChart()
+            this.getSectorChart()
+            this.getAllStocksChart()
             this.showView = true
           })
           .catch(() => {
@@ -139,7 +183,8 @@ export default Vue.extend({
             })
       }
       else {
-        this.getPieChart()
+        this.getSectorChart()
+        this.getAllStocksChart()
         this.showView = true
       }
     },
