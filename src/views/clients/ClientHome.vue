@@ -1,25 +1,49 @@
 <template>
-  <div class="container" v-if="showView">
-    <div class="control-section" v-if="showPieChart">
-      <div align='center'>
-        <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer' :title="title"
-                               :legendSettings='legendSettings' :tooltip='tooltip'>
-          <e-accumulation-series-collection>
-            <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
-
-          </e-accumulation-series-collection>
-        </ejs-accumulationchart>
+  <div class="main_container" v-if="showView">
+    <div class="d-flex flex-row justify-content-around">
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Valor total</h5>
+          <p class="card-text">{{ totalValue.toFixed(2) + " €"}}</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">G&P</h5>
+          <p class="card-text  gypgreen" v-if="earnsAndLoses > 0">{{ earnsAndLoses.toFixed(2) + " €" }}</p>
+          <p class="card-text  gypred" v-else-if="earnsAndLoses < 0">{{ earnsAndLoses.toFixed(2) + " €" }}</p>
+          <p class="card-text" v-else>{{ earnsAndLoses.toFixed(2) + " €" }}</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Total Activos</h5>
+          <p class="card-text">{{ totalAssets }}</p>
+        </div>
       </div>
     </div>
-    <div class="control-section" v-if="showStocksChart">
-      <div align='center'>
-        <ejs-accumulationchart style='display:inline-block' :load='load' align='center' id='chartcontainer2' :title="'% activos de tu cartera'"
-                               :legendSettings='legendSettings' :tooltip='tooltip'>
-          <e-accumulation-series-collection>
-            <e-accumulation-series :dataSource='pieChartDataStocks' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+    <div class="graficos_horizontal">
+      <div class="control-section" v-if="showPieChart">
+        <div align='center'>
+          <ejs-accumulationchart style='display:inline-block' :load='load' id='chartcontainer' :title="title"
+                                 :legendSettings='legendSettings' :tooltip='tooltip'>
+            <e-accumulation-series-collection>
+              <e-accumulation-series :dataSource='pieChartData' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='Sectores' > </e-accumulation-series>
 
-          </e-accumulation-series-collection>
-        </ejs-accumulationchart>
+            </e-accumulation-series-collection>
+          </ejs-accumulationchart>
+        </div>
+      </div>
+      <div class="control-section" v-if="showStocksChart">
+        <div align='center'>
+          <ejs-accumulationchart style='display:inline-block' :load='load'  id='chartcontainer2' :title="'Activos de tu cartera (%)'"
+                                 :legendSettings='legendSettings' :tooltip='tooltip'>
+            <e-accumulation-series-collection>
+              <e-accumulation-series :dataSource='pieChartDataStocks' xName='x' yName='y' startAngle='60' :dataLabel='dataLabel' innerRadius='0%' name='% cartera' > </e-accumulation-series>
+
+            </e-accumulation-series-collection>
+          </ejs-accumulationchart>
+        </div>
       </div>
     </div>
   </div>
@@ -47,6 +71,9 @@ export default Vue.extend({
       apiKey: process.env.VUE_APP_APIKEY,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
+      totalValue: 0,
+      earnsAndLoses: 0,
+      totalAssets: 0,
       showView: false,
       showPieChart: false,
       showStocksChart:false,
@@ -121,6 +148,74 @@ export default Vue.extend({
       if(sectors.size !== 0) this.showPieChart = true
 
     },
+    getTotalAssets(){
+      this.totalAssets = Object.keys(this.info).length;
+    },
+    getTotalValue(){
+      let totalValueLocal = 0;
+
+      for (const index in this.info) {
+        let change = 1;
+        let currency = this.infoFinances[index].quoteResponse.result[0].currency;
+
+        if (currency !== 'EUR'){
+          change = this.convertToEuros(currency);
+        }
+
+        totalValueLocal += this.infoFinances[index].quoteResponse.result[0].regularMarketPrice * change * this.info[index].quantity;
+      }
+
+      this.totalValue = totalValueLocal;
+    },
+    getTotalEarnsAndLoses(){
+      let priceDifference; //variable auxiliar para hacer cuentas
+      let gp; //pyg por cada transaccion
+
+      for(let item in this.info){
+        let currency = this.infoFinances[item].quoteResponse.result[0].currency;
+        let change = 1;
+
+        if (currency !== 'EUR'){
+          change = this.convertToEuros(currency);
+        }
+
+        //priceDifference = precio actual en EUR - precio de compra en EUR
+        priceDifference = change * this.infoFinances[item].quoteResponse.result[0].regularMarketPrice - change * this.info[item].buyPrice;
+        //gp = aux * cantidad
+        gp = priceDifference * this.info[item].quantity;
+
+        this.earnsAndLoses += gp;
+      }
+    },
+    convertToEuros(currency){
+
+      let change = localStorage.getItem(currency);
+
+      if(change == null) {
+
+        var options = {
+          method: 'GET',
+          url: 'https://currency-exchange.p.rapidapi.com/exchange',
+          params: {from: currency, to: 'EUR', q: '1.0'},
+          headers: {
+            'x-rapidapi-host': 'currency-exchange.p.rapidapi.com',
+            'x-rapidapi-key': '7f8e0f06aemsh10389b0e8277836p1c4e11jsna2dbb7767fc7' //TODO Change this key
+          }
+        };
+
+        axios.request(options).then(function (response) {
+          localStorage.setItem(currency, response.data);
+          return response.data;
+        }).catch(function (error) {
+          this.showWarningModal(error);
+        });
+
+        return 1;
+      }
+      else {
+        return change;
+      }
+    },
     async financialData(){
       let promises = [];
       for (let index in this.info) {
@@ -148,8 +243,11 @@ export default Vue.extend({
 
       Promise.all(promises)
           .then(() => {
-            this.getSectorChart()
-            this.getAllStocksChart()
+            this.getSectorChart();
+            this.getAllStocksChart();
+            this.getTotalAssets();
+            this.getTotalValue();
+            this.getTotalEarnsAndLoses();
             this.showView = true
           })
           .catch(() => {
@@ -185,6 +283,9 @@ export default Vue.extend({
       else {
         this.getSectorChart()
         this.getAllStocksChart()
+        this.getTotalAssets();
+        this.getTotalValue();
+        this.getTotalEarnsAndLoses();
         this.showView = true
       }
     },
@@ -200,8 +301,30 @@ export default Vue.extend({
 
 <style scoped>
 
-.container {
+.main_container{
+  margin-top: 15px;
   padding: 20px;
 }
+.card-title{
+  font-weight: bold;
+}
+
+.card{
+  min-width: 200px;
+}
+
+.gypgreen{
+  color: green;
+}
+
+.gypred{
+  color: red;
+}
+
+.graficos_horizontal{
+  margin-top: 20px;
+  display: flex;
+}
+
 
 </style>

@@ -388,7 +388,7 @@ export default {
       }
     },
 
-    cuentas(){
+    cuentas(){ //TODO Las PYG las calcula en $ y las muestra en EUR
       let aux; //variable auxiliar para hacer cuentas
       let gp; //pyg por cada transaccion
      
