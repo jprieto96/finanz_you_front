@@ -9,6 +9,12 @@
       </div>
       <div class="card">
         <div class="card-body">
+          <h5 class="card-title">Valor total</h5>
+          <p class="card-text">{{ profitTimeStamp.size}} {{test}}}</p>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-body">
           <h5 class="card-title">G&P</h5>
           <p class="card-text  gypgreen" v-if="earnsAndLoses > 0">{{ earnsAndLoses.toFixed(2) + " €" }}</p>
           <p class="card-text  gypred" v-else-if="earnsAndLoses < 0">{{ earnsAndLoses.toFixed(2) + " €" }}</p>
@@ -81,18 +87,20 @@ export default Vue.extend({
       pieChartDataStocks: [],
       infoFinances: {},
       info: null,
+      test: null,
+      infoTransactions: {},
+      infoStockHistory: null,
+      profitTimeStamp: new Map(),
       dataLabel: {
         visible: true, position: 'Outside',
         connectorStyle: { length: '20px', type: 'Curve' }, name: 'text',
       },
-
       legendSettings: {
         visible: false,
       },
-
       tooltip: { enable: true, format: '${point.x} : <b>${point.y}%</b>' },
+      title: "Sectores de tu cartera",
 
-      title: "Sectores de tu cartera"
     }
   },
   provide: {
@@ -104,10 +112,106 @@ export default Vue.extend({
       window.location.href = '/login'
     }
     else {
-      this.getData()
+      this.getData();
     }
   },
   methods: {
+    //Este método obtendrá la rentabilidad total de la cartera a lo largo de varios periodos
+    getProfitChart() {
+      this.getStockHistory();
+
+      for (const stamp in Object.values(this.infoStockHistory)[0].timestamp) {//Por cada timestamp recorrerá los valores
+        let rentabilidad = 0;
+        let gyp = 0;
+        let inversionTotal = 0;
+
+        for (const stock of this.infoTransactions) { //Por cada transacción comparará si entra en la fecha o no
+          const infoStock = this.infoStockHistory[stock.stockID];
+
+          if(infoStock !== undefined) {
+
+            const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
+            if (fecha <= infoStock.timestamp[stamp]) { //Si la fecha de compra es anterior al timestamp incluirla
+              inversionTotal += stock.buyPrice * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
+              gyp += (infoStock.close[stamp] - stock.buyPrice) * stock.quantity //Acumulamos las PyG de un TimeStamp
+            }
+          }
+        }
+
+        if(gyp !== 0 && inversionTotal !== 0) {//Para que no divida 0 / 0
+          rentabilidad = gyp / inversionTotal;
+        }
+
+        this.profitTimeStamp.set(stamp, rentabilidad);
+      }
+    },
+    getTransactions(){
+      let hashClient = this.$cookies.get("Session")
+      let promises = []
+
+      this.infoTransactions = JSON.parse(localStorage.getItem("infoTransactions"))
+
+      if(this.infoTransactions === null) {
+        promises.push(axios
+            .get( this.backURL + 'client/showTransactions/' + hashClient)
+            .then(response => {
+              this.infoTransactions = response.data;
+              localStorage.setItem("infoTransactions", JSON.stringify(this.infoTransactions))
+              this.showEmptyMsg = this.infoTransactions.length === 0
+            })
+            .catch((err) => {
+              this.showWarningModal(err.response.data)
+              this.showEmptyMsg = true
+            }))
+
+        Promise.all(promises)
+            .then(() => {
+              this.showView = true;
+            })
+            .catch(() => {
+              this.showWarningModal(this.errorMSG)
+            })
+      }
+      else {
+        this.showView = this.infoTransactions.length >= 0
+        this.showEmptyMsg = this.infoTransactions.length === 0
+      }
+    },
+    //Llamada a la API Stock History, que devuelve los precios de varios valores dados un range y un interval
+    getStockHistory() {
+
+      this.infoStockHistory = JSON.parse(localStorage.getItem("infoStockHistory"));
+
+      if(this.infoStockHistory === null) {
+
+        let symbols = [];
+
+        for (const stock of Object.keys(this.info)) {//Obtener todos los simbolos de nuestra cartera
+          symbols.push(stock);
+        }
+
+        let symbolsString = symbols.join(',');
+
+        const options = {
+          method: 'GET',
+          url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v8/finance/spark',
+          params: {symbols: symbolsString, range: '3y', interval: '3mo'},
+          headers: {
+            'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
+            'x-rapidapi-key': this.apiKey
+          }
+        };
+
+        axios.request(options).then(response => {
+          this.infoStockHistory = response.data;
+          localStorage.setItem("infoStockHistory", JSON.stringify(this.infoStockHistory));
+          this.showEmptyMsg = this.infoStockHistory.length === 0;
+        }).catch((error) => {
+          this.showWarningModal(error.response.data);
+          this.showEmptyMsg = true;
+        });
+      }
+    },
     getAllStocksChart() {
       if(Object.keys(this.info).length > 0 && Object.keys(this.infoFinances).length > 0) {
         let totalMarketValue = 0
@@ -248,6 +352,7 @@ export default Vue.extend({
             this.getTotalAssets();
             this.getTotalValue();
             this.getTotalEarnsAndLoses();
+            this.getProfitChart();
             this.showView = true
           })
           .catch(() => {
@@ -275,17 +380,20 @@ export default Vue.extend({
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
+              this.getTransactions();
             })
             .catch(() => {
               this.showWarningModal(this.backURL);
             })
       }
       else {
-        this.getSectorChart()
-        this.getAllStocksChart()
+        this.getTransactions();
+        this.getSectorChart();
+        this.getAllStocksChart();
         this.getTotalAssets();
         this.getTotalValue();
         this.getTotalEarnsAndLoses();
+        this.getProfitChart();
         this.showView = true
       }
     },
