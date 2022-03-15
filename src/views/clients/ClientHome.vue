@@ -28,6 +28,9 @@
         </div>
       </div>
     </div>
+    <div class="grafico_rentabilidad">
+      <apexcharts id="graficoRentabilidad" type="line" :options="chartOptions" :series="series[0]"></apexcharts>
+    </div>
     <div class="graficos_horizontal">
       <div class="control-section" v-if="showPieChart">
         <div align='center'>
@@ -65,13 +68,18 @@ import { AccumulationChartPlugin, AccumulationTooltip, PieSeries, AccumulationLe
 import Vue from "vue";
 import axios from "axios";
 import Loading from 'vue-loading-overlay';
+import VueApexCharts from 'vue-apexcharts'
 import 'vue-loading-overlay/dist/vue-loading.css';
+import moment from "moment";
 
 Vue.use(AccumulationChartPlugin);
 
 export default Vue.extend({
   name: "ClientHome",
-  components: {Loading},
+  components: {
+    Loading,
+    apexcharts: VueApexCharts
+  },
   data() {
     return {
       apiKey: process.env.VUE_APP_APIKEY,
@@ -100,7 +108,41 @@ export default Vue.extend({
       },
       tooltip: { enable: true, format: '${point.x} : <b>${point.y}%</b>' },
       title: "Sectores de tu cartera",
-
+      chartOptions: {
+        chart: {
+          id: 'basic-line',
+          zoom: {
+            enabled: false,
+          }
+        },
+        markers: {
+          showNullDataPoints: true,
+          strokeOpacity: 0.3,
+        },
+        stroke: {
+          width: 5,
+          curve: 'smooth',
+        },
+        xaxis: null,
+        yaxis: {
+          labels: {
+            formatter: (val) => {
+              return (val*100).toFixed(2)  + ' %';
+            }
+          }},
+        title: {
+          text: 'Rentabilidad total de tu cartera',
+          align: 'left',
+          style: {
+            fontSize:  '25px',
+            fontWeight:  'bold',
+            fontFamily:  'Open Sans',
+            color:  '#5d6262'
+          },
+        },
+        colors: ['#222b64'],
+      },
+      series: [],
     }
   },
   provide: {
@@ -142,8 +184,9 @@ export default Vue.extend({
           rentabilidad = gyp / inversionTotal;
         }
 
-        this.profitTimeStamp.set(stamp, rentabilidad);
+        this.profitTimeStamp.set(Object.values(this.infoStockHistory)[0].timestamp[stamp], rentabilidad);
       }
+      this.paintChart();
     },
     getTransactions(){
       let hashClient = this.$cookies.get("Session")
@@ -402,6 +445,29 @@ export default Vue.extend({
       this.modal.message = message
       this.modal.title = "¡Operación Fallida!"
       this.modal.variant = 'warning'
+    },
+    paintChart(){
+      let fechas = [];
+      let data = [];
+      for (const profit of this.profitTimeStamp.entries()){
+        let date = new Date(0);
+        date.setUTCSeconds(profit[0]); //0 es la clave y 1 el valor
+        fechas.push(moment(date).format('YYYY MM DD'));
+        data.push(profit[1]);//Aqui almacenamos las rentabilidades
+      }
+      this.series.push([{
+        name: "Rentabilidad",
+        data: data
+      }]);
+
+      this.chartOptions.xaxis = {
+        categories: fechas
+      };
+
+      if(this.showView === false){
+        this.showView = true;
+      }
+
     }
   }
 });
@@ -432,6 +498,19 @@ export default Vue.extend({
 .graficos_horizontal{
   margin-top: 20px;
   display: flex;
+}
+
+.grafico_rentabilidad{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+#graficoRentabilidad{
+  width: 60%;
+  height: 200px;
+  align-self: center;
 }
 
 
