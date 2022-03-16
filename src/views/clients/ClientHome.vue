@@ -9,8 +9,8 @@
       </div>
       <div class="card">
         <div class="card-body">
-          <h5 class="card-title">Valor total</h5>
-          <p class="card-text">{{ profitTimeStamp.size}} {{test}}}</p>
+          <h5 class="card-title">Rentabilidad total</h5>
+          <p class="card-text">{{ (totalProfit * 100).toFixed(2) + " %"}}</p>
         </div>
       </div>
       <div class="card">
@@ -88,6 +88,7 @@ export default Vue.extend({
       totalValue: 0,
       earnsAndLoses: 0,
       totalAssets: 0,
+      totalProfit: 0,
       showView: false,
       showPieChart: false,
       showStocksChart:false,
@@ -317,6 +318,7 @@ export default Vue.extend({
     getTotalEarnsAndLoses(){
       let priceDifference; //variable auxiliar para hacer cuentas
       let gp; //pyg por cada transaccion
+      let capitalInvestment = 0; //Variable para acumular el capital invertido
 
       for(let item in this.info){
         let currency = this.infoFinances[item].quoteResponse.result[0].currency;
@@ -330,9 +332,12 @@ export default Vue.extend({
         priceDifference = change * this.infoFinances[item].quoteResponse.result[0].regularMarketPrice - change * this.info[item].buyPrice;
         //gp = aux * cantidad
         gp = priceDifference * this.info[item].quantity;
+        capitalInvestment += (change * this.info[item].buyPrice * this.info[item].quantity);
 
         this.earnsAndLoses += gp;
       }
+
+      this.totalProfit = this.earnsAndLoses/capitalInvestment;
     },
     convertToEuros(currency){
 
