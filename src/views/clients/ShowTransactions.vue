@@ -6,6 +6,8 @@
     <div><b-button
         id="deleteValue"
         variant="danger"
+        pill
+        v-if="!showEmptyMsg"
         @click="deleteOption = !deleteOption"
     >Eliminar valor</b-button></div>
     <br>
@@ -35,7 +37,8 @@
       </b-tbody>
     </b-table-simple>
     <br>
-    <div v-if="checked"><b-button
+    <p class="empty_msg" v-if="showEmptyMsg">No hay ningún movimiento</p>
+    <div v-if="deleteOption && checked && !showEmptyMsg"><b-button
         v-b-modal.modal-delete-confirmed
         id="deleteConfirmedValue"
         pill variant="outline-danger"
@@ -43,20 +46,11 @@
     >Borrar {{ checked.idStock }}</b-button></div>
     <div v-if="deleteConfirmed">
       <b-modal id="modal-delete-confirmed" title="Confirmación para eliminar" cancel-title="Cancelar" ok-title="Estoy seguro/a" v-on:ok="onSubmit">
-        <p class="my-4">¿Está seguro/a que quiere eliminar {{ checked.quantity }} uds de  {{ checked.stockName }} por {{ checked.buyPrice.toFixed(2) + "$" }} a fecha {{ checked.date }}?</p>
+        <p class="my-4">¿Está seguro/a que quiere eliminar {{ checked.quantity }} uds de  {{ checked.stockName }} por {{ checked.buyPrice.toFixed(2) + "$" }} a fecha {{ getDate(checked.date) }}?</p>
       </b-modal>
-
-    <div v-if="deleteDone && deleteConfirmed">
-      <b-alert variant="success" show>Se ha eliminado correctamente.</b-alert>
-    </div>
-    <div v-else-if="deleteDone===false && deleteConfirmed">
-      <b-alert variant="warning" show>Error al eliminar.</b-alert>
-    </div>
-    <p class="empty_msg" v-if="showEmptyMsg">No hay ningún movimiento</p>
-    <b-modal id="modal-1" title="BootstrapVue">
-      <p class="my-4">Hello from modal!</p>
-    </b-modal>
-
+      <b-modal id="modal-1" title="BootstrapVue">
+        <p class="my-4">Hello from modal!</p>
+      </b-modal>
     </div>
 
     <ModalMessage
@@ -66,16 +60,23 @@
         class="custom-modal"
     ></ModalMessage>
   </div>
+  <div class="loading" v-else>
+     <loading :active="true"
+              :can-cancel="false"
+              :is-full-page="false"/>
+  </div>
 </template>
 
 <script>
 import axios from "axios";
 import ModalMessage from "@/components/Modal";
+import Loading from 'vue-loading-overlay';
+import 'vue-loading-overlay/dist/vue-loading.css';
 
 export default {
   name: "ShowTransactions",
   // eslint-disable-next-line vue/no-unused-components
-  components: {ModalMessage},
+  components: {ModalMessage, Loading},
   data(){
       return {
         backURL: process.env.VUE_APP_BACK_URL,
@@ -119,7 +120,7 @@ export default {
             .then(response => {
               this.info = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.info))
-              this.showEmptyMsg = this.info.length == 0
+              this.showEmptyMsg = this.info.length === 0
             })
             .catch((err) => {
               this.showWarningModal(err.response.data)
@@ -135,15 +136,19 @@ export default {
             })
       }
       else {
-        this.showView = this.info.length != 0
+        this.showView = this.info.length >= 0
         this.showEmptyMsg = this.info.length == 0
       }
-
-
     },
     getDate(date) {
       let arrayAux = date.split(' ')
       return arrayAux[0] + " " + arrayAux[1] + " " + arrayAux[2].split(',')[0]
+    },
+    showSuccessModal() {
+      this.$bvModal.show("modal")
+      this.modal.title = "¡Operación Exitosa!"
+      this.modal.message = "Se ha eliminado correctamente"
+      this.modal.variant = 'success'
     },
     showWarningModal(message) {
       this.$bvModal.show("modal")
@@ -152,23 +157,21 @@ export default {
       this.modal.variant = 'warning'
     },
     onSubmit() {
-      //event.preventDefault()
-
       let transaction = {};
       transaction.id = this.checked.id;
 
       axios
           .post( this.backURL + 'client/deleteTransaction/', transaction)
-          .then(response => {
+          .then(() => {
             //Aviso de que se ha borrado correctamente.
-            this.deleteDone = true;
-            localStorage.removeItem("infoTransactions");
+            localStorage.clear()
+            this.showSuccessModal()
             this.getData();
-            response.data;
+            this.deleteOption = false
           })
           .catch((err) => {
             //Aviso de que no se ha podido borrar.
-            this.deleteDone = false;
+            this.showWarningModal("Error al eliminar")
             console.log(err)
           })
     }
