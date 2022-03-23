@@ -89,14 +89,15 @@ export default {
     getData(){
       this.infoUser = JSON.parse(localStorage.getItem("infoUser"))
 
-      let hashClient = this.$cookies.get("Session")
-
       if(this.infoUser === null){
+        let hashClient = this.$cookies.get("Session")
+
         axios.get(this.backURL + 'client/showDetails/' + hashClient)
                   .then(response => {
                     this.infoUser = response.data;
                     this.oldUsername = this.infoUser.username;
-                    localStorage.setItem("infoUser", JSON.stringify(this.infoUser))
+                    localStorage.setItem("infoUser", JSON.stringify(this.infoUser));
+                    this.showView = true;
                   })
                   .catch((err) => {
                     this.showWarningModal(err.response.data)
