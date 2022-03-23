@@ -6,7 +6,6 @@
           <a class="link" href="/">
             <img href="/" class="logo" src="../assets/logo.png">
           </a>
-          FinanzYou
         </b-navbar-brand>
         <b-navbar-toggle target="navbar-toggle-collapse">
           <template #default="{ expanded }">
@@ -19,10 +18,10 @@
             <b-nav-item id="portal" v-on:click="active" v-if="clientLogged" href="/client">Mi portal</b-nav-item>
             <b-nav-item id="movimientos" v-on:click="active" v-if="clientLogged" href="/client/transactions">Movimientos</b-nav-item>
             <b-nav-item id="portfolio" v-on:click="active" v-if="clientLogged" href="/client/portfolio">Portfolio</b-nav-item>
-            <b-nav-item id="summary" v-on:click="active" v-if="clientLogged" href="/client/summary">Summary</b-nav-item>
             <b-nav-item id="registrarse" v-on:click="active" v-if="!clientLogged" href="/register">Registrarse</b-nav-item>
             <b-nav-item id="login" v-on:click="active" v-if="!clientLogged" href="/login">Iniciar Sesión</b-nav-item>
-            <b-nav-item id="logout" v-on:click="active" v-if="clientLogged" href="/client/logout">Cerrar Sesión</b-nav-item>
+            <b-nav-item id="perfil" v-on:click="active" v-if="clientLogged" href="/client/perfil"><b-icon icon="person-fill"></b-icon>Mi perfil</b-nav-item>
+            <b-nav-item id="logout" v-on:click="active" v-if="clientLogged" href="/client/logout"><b-icon icon="power" aria-hidden="true"></b-icon>Cerrar Sesión</b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>

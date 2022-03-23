@@ -116,32 +116,31 @@
         <!--Cantidad-->
         <b-td>{{ item.quantity }}</b-td>
         <!--GyP-->
-        <b-td class="gypgreen" v-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) > 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
-        <b-td v-else-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87) == 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
-        <b-td class="gypred" v-else>{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * 0.87).toFixed(2) + " €"}}</b-td>
+        <b-td class="gypgreen" v-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)) > 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
+        <b-td v-else-if="(item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)) === 0">{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
+        <b-td class="gypred" v-else>{{ (item.quantity *  infoFinances[index].quoteResponse.result[0].regularMarketChange * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
         <!--% hoy-->
         <b-td class="gypgreen" v-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent > 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
-        <b-td v-else-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent == 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
+        <b-td v-else-if="(infoFinances[index].quoteResponse.result[0].regularMarketChangePercent === 0)">{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <b-td class="gypred" v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketChangePercent).toFixed(2) }}%</b-td>
         <!--Último precio-->
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice).toFixed(2) + " €"}}</b-td>
+        <b-td v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
         <!--Valor mercado-->
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity).toFixed(2) + " €"}}</b-td>
+        <b-td v-else>{{ (infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
         <!--Valor mercado(EUR)-->
-        <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * 0.87).toFixed(2) + " €"}}</b-td>
-        <b-td v-else>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity)).toFixed(2) + " €"}}</b-td>
+        <b-td>{{ ((infoFinances[index].quoteResponse.result[0].regularMarketPrice * item.quantity) * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
         <!--Precio medio de compra-->
         <b-td v-if="infoFinances[index].quoteResponse.result[0].currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $"}}</b-td>
-        <b-td v-else-if="infoFinances[index].quoteResponse.result[0].currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €"}}</b-td>
+        <b-td v-else>{{ (item.buyPrice * convertToEuros(infoFinances[index].quoteResponse.result[0].currency)).toFixed(2) + " €"}}</b-td>
         <!--GyP total-->
         <b-td class="gypgreen" v-if="gyp[index] > 0">{{gyp[index].toFixed(2) + " €"}}</b-td>
-        <b-td v-else-if="gyp[index] == 0">{{ gyp[index].toFixed(2) + " €"}}</b-td>
+        <b-td v-else-if="gyp[index] === 0">{{ gyp[index].toFixed(2) + " €"}}</b-td>
         <b-td class="gypred" v-else>{{ gyp[index].toFixed(2) + " €"}}</b-td>
         <!--% total-->
         <b-td class="gypgreen" v-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) > 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
-        <b-td v-else-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) == 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
+        <b-td v-else-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) === 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
         <b-td class="gypred" v-else>{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
       </b-tr>
       </b-tbody>
@@ -387,14 +386,49 @@ export default {
         });
       }
     },
+    convertToEuros(currency){
 
+      if(currency === 'EUR'){
+        return 1;
+      }
+
+      let change = localStorage.getItem(currency);
+
+      if(change == null) {
+
+        var options = {
+          method: 'GET',
+          url: 'https://currency-exchange.p.rapidapi.com/exchange',
+          params: {from: currency, to: 'EUR', q: '1.0'},
+          headers: {
+            'x-rapidapi-host': 'currency-exchange.p.rapidapi.com',
+            'x-rapidapi-key': '7f8e0f06aemsh10389b0e8277836p1c4e11jsna2dbb7767fc7' //TODO Change this key
+          }
+        };
+
+        axios.request(options).then(function (response) {
+          localStorage.setItem(currency, response.data);
+          return response.data;
+        }).catch(function (error) {
+          this.showWarningModal(error);
+        });
+
+        return 1;
+      }
+      else {
+        return change;
+      }
+    },
     cuentas(){
       let aux; //variable auxiliar para hacer cuentas
       let gp; //pyg por cada transaccion
      
       for(let item in this.info){
-          //Aux = precio actual - precio de compra
-          aux = this.infoFinances[item].quoteResponse.result[0].regularMarketPrice - this.info[item].buyPrice;
+          const stock = this.infoFinances[item].quoteResponse.result[0];
+          const change = this.convertToEuros(stock.currency);
+
+        //Aux = precio actual - precio de compra
+          aux = (stock.regularMarketPrice * change) - (this.info[item].buyPrice * change);
           //gp = aux * cantidad
           gp = aux * this.info[item].quantity;
           
