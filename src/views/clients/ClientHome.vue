@@ -161,20 +161,29 @@ export default Vue.extend({
   methods: {
     //Este método obtendrá la rentabilidad total de la cartera a lo largo de varios periodos
     getProfitChart() {
-      for (const stamp in Object.values(this.infoStockHistory)[0].timestamp) {//Por cada timestamp recorrerá los valores
+      let size = 0, longerStock;
+      for(const stock of Object.values(this.infoStockHistory)){
+        if(stock.timestamp.length > size){
+          size = stock.timestamp.length;
+          longerStock = stock;
+        }
+      }
+      for (let stamp = 0; stamp < size; stamp++) {//Por cada timestamp recorrerá los valores
         let rentabilidad = 0;
         let gyp = 0;
         let inversionTotal = 0;
 
+
         for (const stock of this.infoTransactions) { //Por cada transacción comparará si entra en la fecha o no
           const infoStock = this.infoStockHistory[stock.stockID];
-
-          if(infoStock !== undefined) {
-
-            const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
-            if (fecha <= infoStock.timestamp[stamp]) { //Si la fecha de compra es anterior al timestamp incluirla
-              inversionTotal += stock.buyPrice * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
-              gyp += (infoStock.close[stamp] - stock.buyPrice) * stock.quantity //Acumulamos las PyG de un TimeStamp
+          if(infoStock !== undefined ){
+            const indice = infoStock.timestamp.length - (size - stamp); //El indice es
+            if(indice > 0) { //Si una acción solo tiene 5 timestamps no incluirlo al principio
+              const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
+              if (fecha <= infoStock.timestamp[indice]) { //Si la fecha de compra es anterior al timestamp incluirla
+                inversionTotal += stock.buyPrice * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
+                gyp += (infoStock.close[indice] - stock.buyPrice) * stock.quantity //Acumulamos las PyG de un TimeStamp
+              }
             }
           }
         }
@@ -183,7 +192,7 @@ export default Vue.extend({
           rentabilidad = gyp / inversionTotal;
         }
 
-        this.profitTimeStamp.set(Object.values(this.infoStockHistory)[0].timestamp[stamp], rentabilidad);
+        this.profitTimeStamp.set(longerStock.timestamp[stamp], rentabilidad);
       }
       this.paintChart();
     },
