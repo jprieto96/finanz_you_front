@@ -29,7 +29,7 @@ h4
       <br />
       <hr />
       <br />
-      <div id="chart" v-if="showLineChart">
+      <div id="lineChart" v-if="showLineChart">
         <apexchart
           type="line"
           height="350"
@@ -176,6 +176,7 @@ export default {
     return {
       apiKey: process.env.VUE_APP_APIKEY,
       apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
+      apiKeyForStockPrice: process.env.VUE_APP_APIKEY_FOR_STOCK_PRICE,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       isLoading: true,
@@ -411,38 +412,65 @@ export default {
       this.showPieChart = true;
     },
     async getLineChart() {
-      let arrayCategories = this.getCategoriesLineChart();
       let categoriesMenu = [];
       let pricesByDate = [];
-      for (let i in arrayCategories) {
-        let split = arrayCategories[i].toString().split(" ");
-        categoriesMenu.push(split[1] + " " + split[2] + " " + split[3]);
 
-        console.log("time" + arrayCategories[i].getTime())
-
-        let options = {
-          method: "GET",
-          url: "https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v7/finance/options/" + this.id,
-          params: { date: arrayCategories[i].getTime() },
-          headers: {
-            "x-rapidapi-host":
-              "stock-data-yahoo-finance-alternative.p.rapidapi.com",
-            "x-rapidapi-key":
-              this.apiKey,
-          },
-        };
-
-        let responsePrice = await axios.request(options);
-        pricesByDate.push(responsePrice.data.optionChain.result[0].quote.regularMarketOpen);
-        await new Promise((r) => setTimeout(r, 200));
+      const formatDate = (date)=>{
+        let month = date.getMonth() + 1
+        if(month < 10) month = "0" + month
+        let day = date.getDate()
+        if(day < 10) day = "0" + day
+        let formatted_date = date.getFullYear() + "-" + month + "-" + day
+        return formatted_date;
       }
 
-      let buyPrice = pricesByDate[0]
-      console.log(pricesByDate)
+      let firstBuyDay = new Date()
+      if (this.infoTransactions !== null) {
+        for (let i = 0; i < this.infoTransactions.length; i++) {
+          if (this.infoTransactions[i].stockID === this.id) {
+            firstBuyDay = new Date(
+                Math.min(firstBuyDay, new Date(this.infoTransactions[i].date))
+            );
+          }
+        }
+      }
+
+      let d_first = formatDate(firstBuyDay)
+      let d_last = formatDate(new Date())
+
+      let responsePrice = JSON.parse(localStorage.getItem("stockPrices" + this.id))
+      if(responsePrice === null) {
+        responsePrice = await axios.get("http://api.marketstack.com/v1/eod?access_key=" + this.apiKeyForStockPrice + "&symbols=" + this.id + "&date_from=" + d_first + "&date_to=" + d_last);
+        localStorage.setItem("stockPrices" + this.id, JSON.stringify(responsePrice))
+        localStorage.setItem("stockPrices" + this.id, JSON.stringify(responsePrice))
+      }
+
+      let arrayPrecios = responsePrice.data.data.reverse()
+      if(arrayPrecios.length < 6) {
+        categoriesMenu.push(d_first)
+        pricesByDate.push(arrayPrecios[0].close);
+        for(let i = 1; i < arrayPrecios.length - 1; i++) {
+          pricesByDate.push(arrayPrecios[i].close);
+          categoriesMenu.push(formatDate(new Date(arrayPrecios[i].date)))
+        }
+        pricesByDate.push(arrayPrecios[arrayPrecios.length - 1].close);
+        categoriesMenu.push(d_last)
+      }
+      else {
+        let long = Math.round(arrayPrecios.length / 5)
+        categoriesMenu.push(d_first)
+        pricesByDate.push(arrayPrecios[0].close);
+        for(let i = 1; i < arrayPrecios.length - 1; i+=long) {
+          pricesByDate.push(arrayPrecios[i].close);
+          categoriesMenu.push(formatDate(new Date(arrayPrecios[i].date)))
+        }
+        pricesByDate.push(responsePrice.data.data[responsePrice.data.data.length - 1].close);
+        categoriesMenu.push(d_last)
+      }
+      let buyPrice = this.info[this.id].buyPrice.toFixed(2)
       this.seriesLineChart[0].data.push(0)
       for(let i = 1; i < pricesByDate.length; i++) {
         let rent = ((pricesByDate[i] - buyPrice) / buyPrice) * 100;
-        console.log(rent)
         this.seriesLineChart[0].data.push(rent)
       }
 
@@ -457,32 +485,6 @@ export default {
 
       this.chartOptionsLineChart.xaxis.categories = categoriesMenu;
       this.showLineChart = true;
-    },
-    getCategoriesLineChart() {
-      let categories = []
-      if (this.infoTransactions !== null) {
-        let trMinDate = new Date();
-        for (let i = 0; i < this.infoTransactions.length; i++) {
-          if (this.infoTransactions[i].stockID === this.id) {
-            trMinDate = new Date(
-              Math.min(trMinDate, new Date(this.infoTransactions[i].date))
-            );
-          }
-        }
-        let daysIntoStock = Math.floor(
-          (new Date().getTime() - trMinDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-        let n = Math.round(daysIntoStock / 6);
-        categories[0] = trMinDate;
-        for (let i = 1; i <= 5; i++) {
-          let res = new Date(categories[i - 1]);
-          res.setDate(res.getDate() + n);
-          categories[i] = res
-        }
-        categories[6] = new Date()
-      }
-      console.log(categories)
-      return categories
     },
     async getData() {
       try {
@@ -735,11 +737,6 @@ hr {
   height: 1px;
   color: #333;
   background-color: #333;
-}
-.newsCard {
-  display: flex;
-  height: 150px;
-  margin: 25px;
 }
 
 .imgNews {
