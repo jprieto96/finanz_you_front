@@ -470,7 +470,7 @@ export default {
       let buyPrice = this.info[this.id].buyPrice.toFixed(2)
       this.seriesLineChart[0].data.push(0)
       for(let i = 1; i < pricesByDate.length; i++) {
-        let rent = ((pricesByDate[i] - buyPrice) / buyPrice) * 100;
+        let rent = (((pricesByDate[i] - buyPrice) / buyPrice) * 100).toFixed(2);
         this.seriesLineChart[0].data.push(rent)
       }
 
