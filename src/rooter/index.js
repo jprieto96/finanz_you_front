@@ -40,14 +40,14 @@ const routes = [
         component: () => import('../views/clients/ShowTransactions.vue')
     },
     {
-        path: '/client/summary',
-        name: 'Summary',
-        component: () => import('../views/clients/ClientSummary.vue')
-    },
-    {
         path: '/stock/:id',
         name: 'Stock',
         component: () => import('../views/stocks/Stock.vue')
+    },
+    {
+        path: '/client/perfil',
+        name: 'Perfil',
+        component: () => import('../views/clients/ClientProfile.vue')
     },
     {   //Este componente NotFound siempre tiene que ir el ultimo en routes
         path: '/*',

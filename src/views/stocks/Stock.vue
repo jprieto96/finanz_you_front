@@ -424,9 +424,10 @@ export default {
         return formatted_date;
       }
 
-      let lastBuyDay = new Date(this.infoTransactions[0].date)
+      let lastBuyDay = ""
       for (let i = 1; i < this.infoTransactions.length; i++) {
         if (this.infoTransactions[i].stockID === this.id) {
+          if(lastBuyDay === "") lastBuyDay = new Date(this.infoTransactions[i].date)
           lastBuyDay = new Date(
               Math.max(lastBuyDay, new Date(this.infoTransactions[i].date))
           );
