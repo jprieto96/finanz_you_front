@@ -29,7 +29,7 @@ h4
       <br />
       <hr />
       <br />
-      <div id="chart">
+      <div id="lineChart" v-if="showLineChart">
         <apexchart
           type="line"
           height="350"
@@ -176,9 +176,13 @@ export default {
     return {
       apiKey: process.env.VUE_APP_APIKEY,
       apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
+      apiKeyForStockPrice: process.env.VUE_APP_APIKEY_FOR_STOCK_PRICE,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       isLoading: true,
+      info: {},
+      infoFinances: {},
+      infoTransactions: {},
       infoStock: {},
       infoRecommendationStock: {},
       id: this.$route.params.id,
@@ -276,7 +280,7 @@ export default {
       seriesLineChart: [
         {
           name: "Rentabilidad - %",
-          data: [28, 29, 33, 36, 32, 32, 33],
+          data: [],
         },
       ],
       chartOptionsLineChart: {
@@ -317,17 +321,17 @@ export default {
           size: 1,
         },
         xaxis: {
-          categories: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+          categories: [],
           title: {
-            text: "Month",
+            text: "Fecha",
           },
         },
         yaxis: {
           title: {
             text: "% Porcentaje",
           },
-          min: 28,
-          max: 38,
+          min: -20,
+          max: 100,
         },
         legend: {
           position: "top",
@@ -350,35 +354,39 @@ export default {
   created() {
     this.getData();
     this.getPieChart();
-    this.getCategoriesLineChart();
+    this.getLineChart();
   },
   methods: {
     getPieChart() {
-      let info = JSON.parse(localStorage.getItem("info"));
-      let infoFinances = JSON.parse(localStorage.getItem("infoFinances"));
       let marketValueStockDetail = 0;
-      if (infoFinances[this.id].quoteResponse.result[0].currency === "USD") {
+      if (
+        this.infoFinances[this.id].quoteResponse.result[0].currency === "USD"
+      ) {
         marketValueStockDetail =
-          infoFinances[this.id].quoteResponse.result[0].regularMarketPrice *
-          info[this.id].quantity *
+          this.infoFinances[this.id].quoteResponse.result[0]
+            .regularMarketPrice *
+          this.info[this.id].quantity *
           0.87;
       } else {
         marketValueStockDetail =
-          infoFinances[this.id].quoteResponse.result[0].regularMarketPrice *
-          info[this.id].quantity;
+          this.infoFinances[this.id].quoteResponse.result[0]
+            .regularMarketPrice * this.info[this.id].quantity;
       }
 
       let totalMarketValue = 0;
-      for (let stock in infoFinances) {
-        if (infoFinances[stock].quoteResponse.result[0].currency === "USD") {
+      for (let stock in this.infoFinances) {
+        if (
+          this.infoFinances[stock].quoteResponse.result[0].currency === "USD"
+        ) {
           totalMarketValue +=
-            infoFinances[stock].quoteResponse.result[0].regularMarketPrice *
-            info[stock].quantity *
+            this.infoFinances[stock].quoteResponse.result[0]
+              .regularMarketPrice *
+            this.info[stock].quantity *
             0.87;
         } else {
           totalMarketValue +=
-            infoFinances[stock].quoteResponse.result[0].regularMarketPrice *
-            info[stock].quantity;
+            this.infoFinances[stock].quoteResponse.result[0]
+              .regularMarketPrice * this.info[stock].quantity;
         }
       }
 
@@ -403,38 +411,150 @@ export default {
       }
       this.showPieChart = true;
     },
-    getCategoriesLineChart() {
-      let infoTransactions = JSON.parse(
-        localStorage.getItem("infoTransactions")
-      );
-      let categories = []
-      if (infoTransactions !== null) {
-        let trMinDate = new Date();
-        for (let i = 1; i < infoTransactions.length; i++) {
-          if (infoTransactions[i].stockID === this.id) {
-            trMinDate = new Date(
-              Math.min(trMinDate, new Date(infoTransactions[i].date))
-            );
-          }
-        }
+    async getLineChart() {
+      let categoriesMenu = [];
+      let pricesByDate = [];
 
-        let daysIntoStock = Math.floor(
-          (new Date().getTime() - trMinDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-        let n = Math.round(daysIntoStock / 6);
-        categories[0] = trMinDate;
-        for (let i = 1; i <= 5; i++) {
-          let res = new Date(categories[i - 1]);
-          res.setDate(res.getDate() + n);
-          categories[i] = res
-        }
-        categories[6] = new Date()
+      const formatDate = (date)=>{
+        let month = date.getMonth() + 1
+        if(month < 10) month = "0" + month
+        let day = date.getDate()
+        if(day < 10) day = "0" + day
+        let formatted_date = date.getFullYear() + "-" + month + "-" + day
+        return formatted_date;
       }
 
-      return categories
+      let lastBuyDay = ""
+      for (let i = 1; i < this.infoTransactions.length; i++) {
+        if (this.infoTransactions[i].stockID === this.id) {
+          if(lastBuyDay === "") lastBuyDay = new Date(this.infoTransactions[i].date)
+          lastBuyDay = new Date(
+              Math.max(lastBuyDay, new Date(this.infoTransactions[i].date))
+          );
+        }
+      }
+
+      console.log(lastBuyDay)
+
+      let d_first = formatDate(lastBuyDay)
+      let d_last = formatDate(new Date())
+
+      let responsePrice = JSON.parse(localStorage.getItem("stockPrices" + this.id))
+      if(responsePrice === null) {
+        responsePrice = await axios.get("http://api.marketstack.com/v1/eod?access_key=" + this.apiKeyForStockPrice + "&symbols=" + this.id + "&date_from=" + d_first + "&date_to=" + d_last);
+        localStorage.setItem("stockPrices" + this.id, JSON.stringify(responsePrice))
+      }
+
+      let arrayPrecios = responsePrice.data.data.reverse()
+      if(arrayPrecios.length < 6) {
+        categoriesMenu.push(d_first)
+        pricesByDate.push(arrayPrecios[0].close);
+        for(let i = 1; i < arrayPrecios.length - 1; i++) {
+          pricesByDate.push(arrayPrecios[i].close);
+          categoriesMenu.push(formatDate(new Date(arrayPrecios[i].date)))
+        }
+        pricesByDate.push(arrayPrecios[arrayPrecios.length - 1].close);
+        categoriesMenu.push(d_last)
+      }
+      else {
+        let long = Math.round(arrayPrecios.length / 5)
+        categoriesMenu.push(d_first)
+        pricesByDate.push(arrayPrecios[0].close);
+        for(let i = 1; i < arrayPrecios.length - 1; i+=long) {
+          pricesByDate.push(arrayPrecios[i].close);
+          categoriesMenu.push(formatDate(new Date(arrayPrecios[i].date)))
+        }
+        pricesByDate.push(responsePrice.data.data[responsePrice.data.data.length - 1].close);
+        categoriesMenu.push(d_last)
+      }
+      let buyPrice = this.info[this.id].buyPrice.toFixed(2)
+      this.seriesLineChart[0].data.push(0)
+      for(let i = 1; i < pricesByDate.length; i++) {
+        let rent = (((pricesByDate[i] - buyPrice) / buyPrice) * 100).toFixed(2);
+        this.seriesLineChart[0].data.push(rent)
+      }
+
+      let min = Number.POSITIVE_INFINITY, max = Number.NEGATIVE_INFINITY
+      for(let i in this.seriesLineChart[0].data) {
+        min = Math.min(this.seriesLineChart[0].data[i], min)
+        max = Math.max(this.seriesLineChart[0].data[i], max)
+      }
+
+      this.chartOptionsLineChart.yaxis.min = min
+      this.chartOptionsLineChart.yaxis.max = max
+
+      this.chartOptionsLineChart.xaxis.categories = categoriesMenu;
+      this.showLineChart = true;
     },
     async getData() {
       try {
+        let hashClient = this.$cookies.get("Session");
+        this.info = JSON.parse(localStorage.getItem("info"));
+        this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"));
+        this.infoTransactions = JSON.parse(
+          localStorage.getItem("infoTransactions")
+        );
+
+        if (this.infoTransactions === null) {
+          let response = await axios.get(
+            this.backURL + "client/showTransactions/" + hashClient
+          );
+          this.infoTransactions = response.data;
+          localStorage.setItem(
+            "infoTransactions",
+            JSON.stringify(this.infoTransactions)
+          );
+        }
+
+        if (this.info === null || this.infoFinances === null) {
+          this.info = JSON.parse(localStorage.getItem("info"));
+          this.infoFinances = JSON.parse(localStorage.getItem("infoFinances"));
+          let response = await axios.get(
+            this.backURL + "client/showPortfolio/" + hashClient
+          );
+          this.info = response.data;
+          localStorage.setItem("info", JSON.stringify(this.info));
+
+          let promises = [];
+
+          for (let index in this.info) {
+            let options = {
+              method: "GET",
+              url: "https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v6/finance/quote",
+              params: { symbols: index },
+              headers: {
+                "x-rapidapi-host":
+                  "stock-data-yahoo-finance-alternative.p.rapidapi.com",
+                "x-rapidapi-key": this.apiKey,
+              },
+            };
+
+            promises.push(
+              axios
+                .request(options)
+                .then((response) => {
+                  this.infoFinances[index] = response.data;
+                  return response.data;
+                })
+                .catch(() => {
+                  this.showWarningModal(this.errorMSG);
+                })
+            );
+            await new Promise((r) => setTimeout(r, 300));
+          }
+
+          localStorage.setItem(
+            "infoFinances",
+            JSON.stringify(this.infoFinances)
+          );
+
+          Promise.all(promises)
+            .then(() => {})
+            .catch(() => {
+              this.showWarningModal(this.errorMSG);
+            });
+        }
+
         let options = {
           method: "GET",
           url:
@@ -617,11 +737,6 @@ hr {
   height: 1px;
   color: #333;
   background-color: #333;
-}
-.newsCard {
-  display: flex;
-  height: 150px;
-  margin: 25px;
 }
 
 .imgNews {

@@ -57,9 +57,9 @@
     </div>
   </div>
   <div class="loading" v-else>
-     <loading :active="true"
-              :can-cancel="false"
-              :is-full-page="false"/>
+    <loading :active="true"
+             :can-cancel="false"
+             :is-full-page="false"/>
   </div>
 </template>
 
@@ -287,11 +287,11 @@ export default Vue.extend({
             totalMarketValue += this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
           }
         }
-        
+
         for(let stock in this.infoFinances) {
           this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
         }
-        
+
         this.showStocksChart = true
       }
     },
