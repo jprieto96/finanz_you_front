@@ -175,14 +175,19 @@ export default Vue.extend({
 
 
         for (const stock of this.infoTransactions) { //Por cada transacción comparará si entra en la fecha o no
-          const infoStock = this.infoStockHistory[stock.stockID];
+          const infoStock = Object.values(this.infoStockHistory).find(obj => obj.symbol === stock.stockID);
           if(infoStock !== undefined ){
             const indice = infoStock.timestamp.length - (size - stamp); //El indice es
-            if(indice > 0) { //Si una acción solo tiene 5 timestamps no incluirlo al principio
+            if(indice >= 0) { //Si una acción solo tiene 5 timestamps no incluirlo al principio
               const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
               if (fecha <= infoStock.timestamp[indice]) { //Si la fecha de compra es anterior al timestamp incluirla
-                inversionTotal += stock.buyPrice * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
-                gyp += (infoStock.close[indice] - stock.buyPrice) * stock.quantity //Acumulamos las PyG de un TimeStamp
+                let change = 1;
+                if (stock.currency !== 'EUR'){
+                  change = this.convertToEuros(stock.currency);
+                }
+
+                inversionTotal += (change * stock.buyPrice) * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
+                gyp += (change * infoStock.close[indice] - stock.buyPrice * change) * stock.quantity //Acumulamos las PyG de un TimeStamp
               }
             }
           }
