@@ -10,7 +10,8 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Rentabilidad total</h5>
-          <p class="card-text">{{ (totalProfit * 100).toFixed(2) + " %"}}</p>
+          <p class="card-text" v-if="showProfitChart">{{ (totalProfit * 100).toFixed(2) + " %"}}</p>
+          <p class="card-text" v-else>{{"0 %"}}</p>
         </div>
       </div>
       <div class="card">
@@ -28,7 +29,7 @@
         </div>
       </div>
     </div>
-    <div class="grafico_rentabilidad">
+    <div class="grafico_rentabilidad" v-if="showProfitChart">
       <apexcharts id="graficoRentabilidad" type="line" :options="chartOptions" :series="series[0]"></apexcharts>
     </div>
     <div class="graficos_horizontal">
@@ -92,6 +93,7 @@ export default Vue.extend({
       showView: false,
       showPieChart: false,
       showStocksChart:false,
+      showProfitChart: true,
       pieChartData: [],
       pieChartDataStocks: [],
       infoFinances: {},
@@ -213,8 +215,14 @@ export default Vue.extend({
             .then(response => {
               this.infoTransactions = response.data;
               localStorage.setItem("infoTransactions", JSON.stringify(this.infoTransactions));
-              this.showEmptyMsg = this.infoTransactions.length === 0;
-              this.getStockHistory();
+              if(this.infoTransactions.length === 0) {
+                this.showEmptyMsg = true;
+                this.showView = true;
+                this.showProfitChart = false;
+              }
+              else{
+                this.getStockHistory();
+              }
             })
             .catch((err) => {
               this.showWarningModal(err.response.data)
@@ -230,8 +238,14 @@ export default Vue.extend({
             })
       }
       else {
-        await this.getStockHistory();
-        this.showEmptyMsg = this.infoTransactions.length === 0
+        if(this.infoTransactions.length === 0){
+          this.showEmptyMsg = true;
+          this.showView = true;
+          this.showProfitChart = false;
+        }
+        else {
+          await this.getStockHistory();
+        }
       }
     },
     //Llamada a la API Stock History, que devuelve los precios de varios valores dados un range y un interval
