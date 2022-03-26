@@ -424,24 +424,23 @@ export default {
         return formatted_date;
       }
 
-      let firstBuyDay = new Date()
-      if (this.infoTransactions !== null) {
-        for (let i = 0; i < this.infoTransactions.length; i++) {
-          if (this.infoTransactions[i].stockID === this.id) {
-            firstBuyDay = new Date(
-                Math.min(firstBuyDay, new Date(this.infoTransactions[i].date))
-            );
-          }
+      let lastBuyDay = new Date(this.infoTransactions[0].date)
+      for (let i = 1; i < this.infoTransactions.length; i++) {
+        if (this.infoTransactions[i].stockID === this.id) {
+          lastBuyDay = new Date(
+              Math.max(lastBuyDay, new Date(this.infoTransactions[i].date))
+          );
         }
       }
 
-      let d_first = formatDate(firstBuyDay)
+      console.log(lastBuyDay)
+
+      let d_first = formatDate(lastBuyDay)
       let d_last = formatDate(new Date())
 
       let responsePrice = JSON.parse(localStorage.getItem("stockPrices" + this.id))
       if(responsePrice === null) {
         responsePrice = await axios.get("http://api.marketstack.com/v1/eod?access_key=" + this.apiKeyForStockPrice + "&symbols=" + this.id + "&date_from=" + d_first + "&date_to=" + d_last);
-        localStorage.setItem("stockPrices" + this.id, JSON.stringify(responsePrice))
         localStorage.setItem("stockPrices" + this.id, JSON.stringify(responsePrice))
       }
 
