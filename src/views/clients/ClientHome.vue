@@ -10,7 +10,8 @@
       <div class="card">
         <div class="card-body">
           <h5 class="card-title">Rentabilidad total</h5>
-          <p class="card-text">{{ (totalProfit * 100).toFixed(2) + " %"}}</p>
+          <p class="card-text" v-if="showProfitChart">{{ (totalProfit * 100).toFixed(2) + " %"}}</p>
+          <p class="card-text" v-else>{{"0 %"}}</p>
         </div>
       </div>
       <div class="card">
@@ -28,7 +29,7 @@
         </div>
       </div>
     </div>
-    <div class="grafico_rentabilidad">
+    <div class="grafico_rentabilidad" v-if="showProfitChart">
       <apexcharts id="graficoRentabilidad" type="line" :options="chartOptions" :series="series[0]"></apexcharts>
     </div>
     <div class="graficos_horizontal">
@@ -57,9 +58,9 @@
     </div>
   </div>
   <div class="loading" v-else>
-     <loading :active="true"
-              :can-cancel="false"
-              :is-full-page="false"/>
+    <loading :active="true"
+             :can-cancel="false"
+             :is-full-page="false"/>
   </div>
 </template>
 
@@ -92,6 +93,7 @@ export default Vue.extend({
       showView: false,
       showPieChart: false,
       showStocksChart:false,
+      showProfitChart: true,
       pieChartData: [],
       pieChartDataStocks: [],
       infoFinances: {},
@@ -161,22 +163,34 @@ export default Vue.extend({
   methods: {
     //Este método obtendrá la rentabilidad total de la cartera a lo largo de varios periodos
     getProfitChart() {
-      this.getStockHistory();
-
-      for (const stamp in Object.values(this.infoStockHistory)[0].timestamp) {//Por cada timestamp recorrerá los valores
+      let size = 0, longerStock;
+      for(const stock of Object.values(this.infoStockHistory)){
+        if(stock.timestamp.length > size){
+          size = stock.timestamp.length;
+          longerStock = stock;
+        }
+      }
+      for (let stamp = 0; stamp < size; stamp++) {//Por cada timestamp recorrerá los valores
         let rentabilidad = 0;
         let gyp = 0;
         let inversionTotal = 0;
 
+
         for (const stock of this.infoTransactions) { //Por cada transacción comparará si entra en la fecha o no
-          const infoStock = this.infoStockHistory[stock.stockID];
+          const infoStock = Object.values(this.infoStockHistory).find(obj => obj.symbol === stock.stockID);
+          if(infoStock !== undefined ){
+            const indice = infoStock.timestamp.length - (size - stamp); //El indice es
+            if(indice >= 0) { //Si una acción solo tiene 5 timestamps no incluirlo al principio
+              const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
+              if (fecha <= infoStock.timestamp[indice]) { //Si la fecha de compra es anterior al timestamp incluirla
+                let change = 1;
+                if (stock.currency !== 'EUR'){
+                  change = this.convertToEuros(stock.currency);
+                }
 
-          if(infoStock !== undefined) {
-
-            const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
-            if (fecha <= infoStock.timestamp[stamp]) { //Si la fecha de compra es anterior al timestamp incluirla
-              inversionTotal += stock.buyPrice * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
-              gyp += (infoStock.close[stamp] - stock.buyPrice) * stock.quantity //Acumulamos las PyG de un TimeStamp
+                inversionTotal += (change * stock.buyPrice) * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
+                gyp += (change * infoStock.close[indice] - stock.buyPrice * change) * stock.quantity //Acumulamos las PyG de un TimeStamp
+              }
             }
           }
         }
@@ -185,11 +199,11 @@ export default Vue.extend({
           rentabilidad = gyp / inversionTotal;
         }
 
-        this.profitTimeStamp.set(Object.values(this.infoStockHistory)[0].timestamp[stamp], rentabilidad);
+        this.profitTimeStamp.set(longerStock.timestamp[stamp], rentabilidad);
       }
       this.paintChart();
     },
-    getTransactions(){
+    async getTransactions(){
       let hashClient = this.$cookies.get("Session")
       let promises = []
 
@@ -200,15 +214,22 @@ export default Vue.extend({
             .get( this.backURL + 'client/showTransactions/' + hashClient)
             .then(response => {
               this.infoTransactions = response.data;
-              localStorage.setItem("infoTransactions", JSON.stringify(this.infoTransactions))
-              this.showEmptyMsg = this.infoTransactions.length === 0
+              localStorage.setItem("infoTransactions", JSON.stringify(this.infoTransactions));
+              if(this.infoTransactions.length === 0) {
+                this.showEmptyMsg = true;
+                this.showView = true;
+                this.showProfitChart = false;
+              }
+              else{
+                this.getStockHistory();
+              }
             })
             .catch((err) => {
               this.showWarningModal(err.response.data)
               this.showEmptyMsg = true
             }))
 
-        Promise.all(promises)
+        await Promise.all(promises)
             .then(() => {
               this.showView = true;
             })
@@ -217,12 +238,18 @@ export default Vue.extend({
             })
       }
       else {
-        this.showView = this.infoTransactions.length >= 0
-        this.showEmptyMsg = this.infoTransactions.length === 0
+        if(this.infoTransactions.length === 0){
+          this.showEmptyMsg = true;
+          this.showView = true;
+          this.showProfitChart = false;
+        }
+        else {
+          await this.getStockHistory();
+        }
       }
     },
     //Llamada a la API Stock History, que devuelve los precios de varios valores dados un range y un interval
-    getStockHistory() {
+    async getStockHistory() {
 
       this.infoStockHistory = JSON.parse(localStorage.getItem("infoStockHistory"));
 
@@ -249,11 +276,15 @@ export default Vue.extend({
         axios.request(options).then(response => {
           this.infoStockHistory = response.data;
           localStorage.setItem("infoStockHistory", JSON.stringify(this.infoStockHistory));
+          this.getProfitChart();
           this.showEmptyMsg = this.infoStockHistory.length === 0;
         }).catch((error) => {
           this.showWarningModal(error.response.data);
           this.showEmptyMsg = true;
         });
+      }
+      else {
+        this.getProfitChart();
       }
     },
     getAllStocksChart() {
@@ -270,11 +301,11 @@ export default Vue.extend({
             totalMarketValue += this.infoFinances[stock].quoteResponse.result[0].regularMarketPrice * this.info[stock].quantity
           }
         }
-        
+
         for(let stock in this.infoFinances) {
           this.pieChartDataStocks.push({'x': stock, 'y': ((marketByStock[stock] / totalMarketValue) * 100).toFixed(2), text: stock})
         }
-        
+
         this.showStocksChart = true
       }
     },
@@ -395,13 +426,12 @@ export default Vue.extend({
 
       Promise.all(promises)
           .then(() => {
+            this.getTransactions();
             this.getSectorChart();
             this.getAllStocksChart();
             this.getTotalAssets();
             this.getTotalValue();
             this.getTotalEarnsAndLoses();
-            this.getProfitChart();
-            this.showView = true
           })
           .catch(() => {
             this.showWarningModal(this.errorMSG);
@@ -428,7 +458,6 @@ export default Vue.extend({
               this.info = response.data;
               localStorage.setItem("info", JSON.stringify(this.info))
               this.financialData();
-              this.getTransactions();
             })
             .catch(() => {
               this.showWarningModal(this.backURL);
@@ -441,8 +470,6 @@ export default Vue.extend({
         this.getTotalAssets();
         this.getTotalValue();
         this.getTotalEarnsAndLoses();
-        this.getProfitChart();
-        this.showView = true
       }
     },
     showWarningModal(message) {

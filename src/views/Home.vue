@@ -82,6 +82,7 @@ export default {
               return val.toFixed(2) + ' $';
             }
           }},
+        colors: ['#222b64'],
       },
       series: [],
     }
