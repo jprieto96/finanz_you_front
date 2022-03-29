@@ -50,7 +50,7 @@ export default {
 <style scoped>
 
 .logo {
-  height: 130px;
+  width: 200px;
 }
 
 .link {
