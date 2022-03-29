@@ -20,8 +20,8 @@
             <b-nav-item id="portfolio" v-on:click="active" v-if="clientLogged" href="/client/portfolio">Portfolio</b-nav-item>
             <b-nav-item id="registrarse" v-on:click="active" v-if="!clientLogged" href="/register">Registrarse</b-nav-item>
             <b-nav-item id="login" v-on:click="active" v-if="!clientLogged" href="/login">Iniciar Sesión</b-nav-item>
-            <b-nav-item id="perfil" v-on:click="active" v-if="clientLogged" href="/client/perfil"><b-icon icon="person-fill"></b-icon>Mi perfil</b-nav-item>
-            <b-nav-item id="logout" v-on:click="active" v-if="clientLogged" href="/client/logout"><b-icon icon="power" aria-hidden="true"></b-icon>Cerrar Sesión</b-nav-item>
+            <b-nav-item id="perfil" v-on:click="active" v-if="clientLogged" href="/client/perfil"><b-icon id="miPerfil" icon="person-fill"></b-icon><b-tooltip target="miPerfil" triggers="hover" positioning="bottom">Mi perfil</b-tooltip> </b-nav-item>
+            <b-nav-item id="logout" v-on:click="active" v-if="clientLogged" href="/client/logout"><b-icon id="cerrarSesion" icon="power" aria-hidden="true"></b-icon><b-tooltip target="cerrarSesion" triggers="hover" positioning="bottom">Cerrar sesión</b-tooltip></b-nav-item>
           </b-navbar-nav>
         </b-collapse>
       </b-navbar>
@@ -50,16 +50,12 @@ export default {
 <style scoped>
 
 .logo {
-  height: 80px;
+  height: 130px;
 }
 
 .link {
   color: black;
   text-decoration: none;
-}
-
-.logout-button {
-  margin-right: 20px;
 }
 
 </style>
