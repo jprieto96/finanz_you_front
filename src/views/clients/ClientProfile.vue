@@ -1,7 +1,9 @@
 <template>
   <div id="perfil" v-if="showView">
     <div id="head">
-      <h1>Mi perfil</h1>
+      <div class="title_container">
+        <h1>Mi perfil</h1>
+      </div>
       <div class="card">
         <div class="card-body">
           <p><b-row>
@@ -41,6 +43,7 @@
 
 <script>
 import axios from "axios";
+
 export default {
   name: "ClientProfile",
   data(){
@@ -158,6 +161,7 @@ export default {
 </script>
 
 <style scoped>
+@import "../../css/generalStyle.css";
 
 .card{
   width: 30%;
