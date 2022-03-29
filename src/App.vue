@@ -42,8 +42,8 @@ body {
 .view_container {
   width: 100%;
   height: auto;
-  margin-right: 10em;
-  margin-left: 10em;
+  margin-right: 5em;
+  margin-left: 5em;
   margin-top: 3em;
   margin-bottom: 5em;
 }
