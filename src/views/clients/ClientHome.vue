@@ -1,5 +1,6 @@
 <template>
-  <div class="main_container" v-if="showView">
+  <div v-if="showView">
+    <div class="title-container" id="centrarTitulo"><h1>Mi Portal</h1></div>
     <div class="d-flex flex-row justify-content-around">
       <div class="card">
         <div class="card-body">
@@ -507,10 +508,7 @@ export default Vue.extend({
 
 <style scoped>
 
-.main_container{
-  margin-top: 15px;
-  padding: 20px;
-}
+
 .card-title{
   font-weight: bold;
 }

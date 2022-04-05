@@ -1,15 +1,7 @@
 <template>
-  <div id="portfolio" v-if="showView">
-    <div id="head">
-      <b-row>
-        <b-col lg="4" class="pb-2"
-          ><b-button
-            id="buttonaddValues"
-            pill
-            v-b-modal.modal-lg
-            variant="primary"
-            >Añadir valor</b-button
-          >
+  <div id="portfolio" class="centrarContenido"  v-if="showView">
+    <div>
+
           <b-modal id="modal-lg" size="lg" title="Añadir valores" hide-footer>
             <b-form @submit="onSubmit" @reset="onReset">
               <b-form-group
@@ -91,19 +83,19 @@
               </b-form-group>
               <br />
               <div>
-                <b-button class="formButton" type="reset">Reset</b-button>
-                <b-button class="formButton" variant="primary" type="submit"
-                  >Enviar</b-button
-                >
+                <b-button class="formButton-reset" type="reset">Resetear</b-button>
+                <b-button class="formButton-add" type="submit">Añadir</b-button>
               </div>
             </b-form>
           </b-modal>
-        </b-col>
-        <b-col lg="4" class="pb-2"><h1>Portfolio</h1></b-col>
-        <b-col lg="4" class="pb-2"></b-col>
-      </b-row>
+        <div class="title-container"><h1>Portfolio</h1></div>
+
     </div>
-    <br />
+      <b-button
+          id="updateValue"
+          pill
+          variant="white"
+      ><b-icon id="update" icon="arrow-clockwise"></b-icon><b-tooltip target="update" triggers="hover" positioning="bottom" variant="light">Actualizar</b-tooltip></b-button>
     <b-table-simple striped hover outlined responsive class="table">
       <b-thead>
         <b-tr>
@@ -161,7 +153,15 @@
       </b-tr>
       </b-tbody>
     </b-table-simple>
+    <b-button
+        id="buttonaddValues"
+        pill
+        v-b-modal.modal-lg
+        variant="white"
+    ><b-icon id="plus" icon="plus-circle-fill"></b-icon></b-button
+    >
   </div>
+
   <div v-else class="loading">
     <loading :active="true" :can-cancel="false" :is-full-page="false" />
   </div>
@@ -491,20 +491,29 @@ export default {
 </script>
 
 <style scoped>
-#portfolio {
-  margin: 20px;
-  padding: 20px;
-}
+@import "../../css/generalStyle.css";
 
-#head {
-  padding: 20px;
+#portfolio {
+  margin: 0px;
+  padding: 0px;
 }
 
 #buttonaddValues {
-  margin-top: 10px;
+  font-size: 2.5rem;
+  margin-left: 95%;
+  margin-top: 15px;
 }
 
-.formButton {
+#plus{
+  color: rgba(54, 107, 157, 0.74);
+}
+
+.formButton-add {
+  margin: 10px;
+  background-color: rgba(54, 107, 157, 0.74);
+}
+
+.formButton-reset {
   margin: 10px;
 }
 
@@ -519,4 +528,10 @@ export default {
 a {
   color: black;
 }
+
+#updateValue{
+  font-size: 1rem;
+  margin-left: 98%;
+}
+
 </style>

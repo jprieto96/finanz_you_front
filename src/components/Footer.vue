@@ -27,4 +27,15 @@ footer {
 section{
   padding-right: 10px;
 }
+
+a {
+  color: rgba(54, 107, 157, 0.74);
+}
+
+a:hover {
+  transform: scale(1.15);
+  color: aliceblue;
+  text-decoration: none;
+}
+
 </style>
