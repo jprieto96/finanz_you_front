@@ -44,7 +44,7 @@ body {
   height: auto;
   margin-right: 5em;
   margin-left: 5em;
-  margin-top: 3em;
+  margin-top: 7em;
   margin-bottom: 5em;
 }
 
