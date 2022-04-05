@@ -1,11 +1,35 @@
 <template>
-  <div id="new_client_form">
-    <h1 id="title">Formulario de Registro</h1>
+  <div class="centrarContenido">
+    <h1 class="title-container">Nueva cuenta</h1>
     <b-form @submit="onSubmit" @reset="onReset" v-if="show">
       <b-form-group
+          id="input-group-dni"
+          label="DNI"
+          label-for="input-dni"
+          label-cols-sm="4"
+          label-cols-lg="3"
+          content-cols-sm
+          content-cols-lg="8"
+      >
+        <b-form-input
+            id="input-dni"
+            v-model="form.dni"
+            type="text"
+            placeholder=""
+            :state="dniValidator"
+            class="text-center"
+            required
+        ></b-form-input>
+      </b-form-group>
+
+      <b-form-group
           id="input-group-user"
-          label="Usuario:"
+          label="Usuario"
           label-for="input-user"
+          label-cols-sm="4"
+          label-cols-lg="3"
+          content-cols-sm
+          content-cols-lg="8"
       >
         <b-form-input
             id="input-user"
@@ -20,9 +44,13 @@
 
       <b-form-group
           id="input-group-password"
-          label="Contraseña:"
+          label="Contraseña"
           label-for="input-password"
           description="min. 8 caracteres, al menos 1 letra y 1 número"
+          label-cols-sm="4"
+          label-cols-lg="3"
+          content-cols-sm
+          content-cols-lg="8"
       >
         <b-form-input
             id="input-password"
@@ -36,27 +64,14 @@
         ></b-form-input>
       </b-form-group>
 
-      <b-form-group
-          id="input-group-dni"
-          label="DNI:"
-          label-for="input-dni"
-      >
-        <b-form-input
-            id="input-dni"
-            v-model="form.dni"
-            type="text"
-            placeholder=""
-            :state="dniValidator"
-            class="text-center"
-            required
-        ></b-form-input>
-      </b-form-group>
-
-      <div id="buttons" class="d-flex justify-content-between">
-        <b-button :disabled="!enabledButton" class="button-success" type="submit" variant="primary">Registrarte
+      <div id="buttons" class="d-flex justify-content-center">
+        <b-button :disabled="!enabledButton" class="button-success" type="submit">Registrar
         </b-button>
         <b-button class="button-cancel" type="reset" variant="danger">Cancelar</b-button>
       </div>
+
+      <br>
+      <p>¿Ya estás registrado? <a href="/login">Inicia Sesión</a></p>
     </b-form>
 
     <ModalMessage
@@ -70,6 +85,7 @@
               :can-cancel="false"
               :is-full-page="false"/>
     </div>
+
   </div>
 </template>
 
@@ -114,7 +130,7 @@ export default {
     dniValidator() {
       if (this.form.dni == '') return null
       return this.validateDni(this.form.dni)
-    }
+    },
   },
   methods: {
     onSubmit(event) {
@@ -176,25 +192,8 @@ export default {
 </script>
 
 <style scoped>
-#new_client_form {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.button-success {
-  width: 120px;
-  margin-right: 15px;
-}
-.button-cancel {
-  width: 120px;
-  margin-left: 15px;
-}
-@media (max-width: 768px) {
-  #title {
-    font-size: x-large;
-    margin-bottom: 30px;
-  }
-}
+@import "../../css/generalStyle.css";
+
+
+
 </style>

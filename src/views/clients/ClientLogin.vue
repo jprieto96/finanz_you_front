@@ -1,11 +1,15 @@
 <template>
-  <div id="login_form" v-if="showLogin">
-    <div id="title"><h1>Login</h1></div>
+  <div class="centrarContenido" v-if="showLogin">
+    <div class="title-container"><h1>Login</h1></div>
     <b-form @submit="onSubmit" @reset="onReset" v-if="show">
       <b-form-group
           id="input-group-user"
-          label="Usuario:"
+          label="Usuario"
           label-for="input-user"
+          label-cols-sm="4"
+          label-cols-lg="3"
+          content-cols-sm
+          content-cols-lg="8"
       >
         <b-form-input
             id="input-user"
@@ -20,9 +24,13 @@
 
       <b-form-group
           id="input-group-password"
-          label="Contraseña:"
+          label="Contraseña"
           label-for="input-password"
           description="min. 8 caracteres, al menos 1 letra y 1 número"
+          label-cols-sm="4"
+          label-cols-lg="3"
+          content-cols-sm
+          content-cols-lg="8"
       >
         <b-form-input
             id="input-password"
@@ -37,8 +45,8 @@
       </b-form-group>
 
       <div id="buttons" class="d-flex justify-content-between">
-        <b-button :disabled="!enabledButton" class="button-success-login" type="submit" variant="primary">Iniciar Sesión</b-button>
-        <b-button class="button-cancel-login" type="reset" variant="danger">Cancelar</b-button>
+        <b-button :disabled="!enabledButton" class="button-success" type="submit" variant="primary">Iniciar Sesión</b-button>
+        <b-button class="button-cancel" type="reset" variant="danger">Cancelar</b-button>
       </div>
 
       <br>
@@ -163,28 +171,7 @@ export default {
 </script>
 
 <style scoped>
-#login_form {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-.button-success-login {
-  width: 150px;
-  margin-right: 15px;
-}
-.button-cancel-login {
-  width: 150px;
-  margin-left: 15px;
-}
-#title {
-  width: 500px;
-}
-@media (max-width: 768px) {
-  #title {
-    font-size: x-large;
-    margin-bottom: 30px;
-  }
-}
+@import "../../css/generalStyle.css";
+
+
 </style>

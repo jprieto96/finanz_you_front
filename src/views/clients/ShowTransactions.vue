@@ -1,16 +1,13 @@
 <template>
-  <div id="transactions" v-if="showView">
-    <div id="head">
-      <h1>Movimientos</h1>
-    </div>
-    <div><b-button
+  <div id="transactions" class="centrarContenido" v-if="showView">
+    <div class="title-container"><h1>Movimientos</h1></div>
+    <b-button
         id="deleteValue"
-        variant="danger"
         pill
+        variant="white"
         v-if="!showEmptyMsg"
         @click="deleteOption = !deleteOption"
-    >Eliminar valor</b-button></div>
-    <br>
+    ><b-icon id="trash" icon="trash-fill"></b-icon><b-tooltip target="trash" triggers="hover" positioning="bottom" variant="light">Eliminar</b-tooltip></b-button>
     <b-table-simple striped hover outlined responsive class="table">
       <b-thead>
       <b-tr>
@@ -32,7 +29,7 @@
         <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
         <b-td v-else-if="item.currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €" }}</b-td>
         <b-td>{{ getDate(item.date) }}</b-td>
-        <b-td v-if="deleteOption"><b-form-checkbox v-model="checked" v-bind:value="item" name="checkbox-button"></b-form-checkbox></b-td>
+        <b-td v-if="deleteOption"><b-form-checkbox id="checkBox" v-model="checked" v-bind:value="item" name="checkbox-button"></b-form-checkbox></b-td>
       </b-tr>
       </b-tbody>
     </b-table-simple>
@@ -41,7 +38,7 @@
     <div v-if="deleteOption && checked && !showEmptyMsg"><b-button
         v-b-modal.modal-delete-confirmed
         id="deleteConfirmedValue"
-        pill variant="outline-danger"
+        variant="danger"
         @click="deleteConfirmed=true"
     >Borrar {{ checked.idStock }}</b-button></div>
     <div v-if="deleteConfirmed">
@@ -181,13 +178,19 @@ export default {
 </script>
 
 <style scoped>
+@import "../../css/generalStyle.css";
 
 #transactions {
   margin: 20px;
 }
 
-#head{
-  padding: 20px;
+#deleteValue{
+  font-size: 1rem;
+  margin-left: 98%;
+}
+
+#trash {
+  color: #9D3636BC;
 }
 
 a {
