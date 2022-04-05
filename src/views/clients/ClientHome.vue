@@ -29,8 +29,14 @@
         </div>
       </div>
     </div>
+        <div id="prueba">
+          <div>Mostrar: </div>
+          <div><b-form-select v-model="yearSelected" :options="yearOptions"></b-form-select></div>
+          <div>Cada: </div>
+          <div><b-form-select v-model="monthSelected" :options="monthOptions"></b-form-select> </div>
+        </div>
     <div class="grafico_rentabilidad" v-if="showProfitChart">
-      <apexcharts id="graficoRentabilidad" type="line" :options="chartOptions" :series="series[0]"></apexcharts>
+        <apexcharts id="graficoRentabilidad" type="line" :options="chartOptions" :series="series[0]"></apexcharts>
     </div>
     <div class="graficos_horizontal">
       <div class="control-section" v-if="showPieChart">
@@ -94,6 +100,21 @@ export default Vue.extend({
       showPieChart: false,
       showStocksChart:false,
       showProfitChart: true,
+      yearSelected: 3,
+      yearOptions: [
+        { value: 3, text: 'Selecciona una opción' },
+        { value: 1, text: '1 año' },
+        { value: 2, text: '2 años' },
+        { value: 3, text: '3 años' },
+      ],
+      monthSelected: 3,
+      monthOptions: [
+        { value: 3, text: 'Selecciona una opción' },
+        { value: 1, text: 'mes' },
+        { value: 2, text: '2 meses' },
+        { value: 3, text: '3 meses' },
+        { value: 6, text: '6 meses' },
+      ],
       pieChartData: [],
       pieChartDataStocks: [],
       infoFinances: {},
@@ -506,7 +527,7 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-
+@import url(../../css/generalStyle.css);
 .main_container{
   margin-top: 15px;
   padding: 20px;
@@ -536,7 +557,7 @@ export default Vue.extend({
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 40px;
+  margin-top: 20px;
 }
 
 #graficoRentabilidad{
@@ -545,5 +566,13 @@ export default Vue.extend({
   align-self: center;
 }
 
+#prueba{
+  max-width: 60%;
+  display: flex;
+  align-self: center;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-around;
+}
 
 </style>

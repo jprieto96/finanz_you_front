@@ -2,3 +2,10 @@
     display: flex;
     align-items: center;
 }
+
+.div_horizontal{
+    display: inline-flex;
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-around;
+}
