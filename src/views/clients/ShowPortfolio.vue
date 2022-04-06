@@ -95,7 +95,7 @@
           id="updateValue"
           pill
           variant="white"
-      ><b-icon id="update" icon="arrow-clockwise"></b-icon><b-tooltip target="update" triggers="hover" positioning="bottom" variant="light">Actualizar</b-tooltip></b-button>
+      ><b-icon id="update" icon="arrow-clockwise" v-on:click="updatePage"></b-icon><b-tooltip target="update" triggers="hover" positioning="bottom" variant="light">Actualizar</b-tooltip></b-button>
     <b-table-simple striped hover outlined responsive class="table">
       <b-thead>
         <b-tr>
@@ -234,6 +234,10 @@ export default {
   },
 
   methods: {
+    updatePage(){
+      localStorage.removeItem("infoFinances");
+      window.location.href = "/client/portfolio";
+    },
     async getData() {
       try {
         let hashClient = this.$cookies.get("Session");
