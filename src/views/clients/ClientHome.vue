@@ -30,14 +30,17 @@
         </div>
       </div>
     </div>
-        <div id="prueba">
-          <div>Mostrar: </div>
-          <div><b-form-select v-model="yearSelected" :options="yearOptions"></b-form-select></div>
-          <div>Cada: </div>
-          <div><b-form-select v-model="monthSelected" :options="monthOptions"></b-form-select> </div>
+        <div class="centrarContenidoFila" id="opcionesGrafico">
+
+            <div>Mostrar: </div>
+            <div><b-form-select v-model="yearSelected" :options="yearOptions"></b-form-select></div>
+            <div>Cada: </div>
+            <div><b-form-select v-model="monthSelected" :options="monthOptions"></b-form-select> </div>
+            <div><b-button class="button-success" v-on:click="updateStockHistory">Actualizar</b-button> </div>
+
         </div>
     <div class="grafico_rentabilidad" v-if="showProfitChart">
-        <apexcharts id="graficoRentabilidad" type="line" :options="chartOptions" :series="series[0]"></apexcharts>
+        <apexcharts id="graficoRentabilidad" ref="profitChart" type="line" :options="chartOptions" :series="series"></apexcharts>
     </div>
     <div class="graficos_horizontal">
       <div class="control-section" v-if="showPieChart">
@@ -101,20 +104,20 @@ export default Vue.extend({
       showPieChart: false,
       showStocksChart:false,
       showProfitChart: true,
-      yearSelected: 3,
+      yearSelected: '3y',
       yearOptions: [
-        { value: 3, text: 'Selecciona una opción' },
-        { value: 1, text: '1 año' },
-        { value: 2, text: '2 años' },
-        { value: 3, text: '3 años' },
+        { value: '3y', text: 'Selecciona una opción' },
+        { value: '1y', text: '1 año' },
+        { value: '2y', text: '2 años' },
+        { value: '3y', text: '3 años' },
       ],
-      monthSelected: 3,
+      monthSelected: '3mo',
       monthOptions: [
-        { value: 3, text: 'Selecciona una opción' },
-        { value: 1, text: 'mes' },
-        { value: 2, text: '2 meses' },
-        { value: 3, text: '3 meses' },
-        { value: 6, text: '6 meses' },
+        { value: '3mo', text: 'Selecciona una opción' },
+        { value: '1mo', text: 'Mes' },
+        { value: '2mo', text: '2 meses' },
+        { value: '3mo', text: '3 meses' },
+        { value: '6mo', text: '6 meses' },
       ],
       pieChartData: [],
       pieChartDataStocks: [],
@@ -186,6 +189,7 @@ export default Vue.extend({
     //Este método obtendrá la rentabilidad total de la cartera a lo largo de varios periodos
     getProfitChart() {
       let size = 0, longerStock;
+      this.profitTimeStamp = new Map(); //Inicializarlo para poder actualizarlo
       for(const stock of Object.values(this.infoStockHistory)){
         if(stock.timestamp.length > size){
           size = stock.timestamp.length;
@@ -270,6 +274,10 @@ export default Vue.extend({
         }
       }
     },
+     updateStockHistory() {
+       localStorage.removeItem("infoStockHistory");
+       this.getStockHistory();
+     },
     //Llamada a la API Stock History, que devuelve los precios de varios valores dados un range y un interval
     async getStockHistory() {
 
@@ -288,7 +296,7 @@ export default Vue.extend({
         const options = {
           method: 'GET',
           url: 'https://stock-data-yahoo-finance-alternative.p.rapidapi.com/v8/finance/spark',
-          params: {symbols: symbolsString, range: '3y', interval: '3mo'},
+          params: {symbols: symbolsString, range: this.yearSelected, interval: this.monthSelected},
           headers: {
             'x-rapidapi-host': 'stock-data-yahoo-finance-alternative.p.rapidapi.com',
             'x-rapidapi-key': this.apiKey
@@ -509,14 +517,16 @@ export default Vue.extend({
         fechas.push(moment(date).format('YYYY MM DD'));
         data.push(profit[1]);//Aqui almacenamos las rentabilidades
       }
-      this.series.push([{
+      this.series = [{
         name: "Rentabilidad",
         data: data
-      }]);
+      }];
 
-      this.chartOptions.xaxis = {
-        categories: fechas
-      };
+      this.chartOptions = {...this.chartOptions, ...{
+        xaxis: {
+          categories: fechas
+        }
+        }}
 
       if(this.showView === false){
         this.showView = true;
@@ -564,13 +574,11 @@ export default Vue.extend({
   align-self: center;
 }
 
-#prueba{
-  max-width: 60%;
-  display: flex;
-  align-self: center;
-  align-items: center;
-  flex-direction: row;
+#opcionesGrafico{
   justify-content: space-around;
+  max-width: 60%;
+  margin-left: 20%;
+  margin-top: 1.5em;
 }
 
 </style>
