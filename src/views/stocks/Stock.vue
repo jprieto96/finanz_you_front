@@ -416,6 +416,9 @@ export default {
       let categoriesMenu = [];
       let pricesByDate = [];
 
+      let buyPriceAtTheMoment = 0
+      let totalQuantity = 0
+
       const formatDate = (date)=>{
         let month = date.getMonth() + 1
         if(month < 10) month = "0" + month
@@ -425,19 +428,20 @@ export default {
         return formatted_date;
       }
 
-      let lastBuyDay = ""
-      for (let i = 1; i < this.infoTransactions.length; i++) {
+      let firstBuyDay = ""
+      for (let i = 0; i < this.infoTransactions.length; i++) {
         if (this.infoTransactions[i].stockID === this.id) {
-          if(lastBuyDay === "") lastBuyDay = new Date(this.infoTransactions[i].date)
-          lastBuyDay = new Date(
-              Math.max(lastBuyDay, new Date(this.infoTransactions[i].date))
-          );
+          if(firstBuyDay === "") firstBuyDay = new Date(this.infoTransactions[i].date)
+          let d = new Date(this.infoTransactions[i].date)
+          if(d < firstBuyDay) {
+            firstBuyDay = d
+          }
         }
       }
 
-      console.log(lastBuyDay)
+      console.log(firstBuyDay)
 
-      let d_first = formatDate(lastBuyDay)
+      let d_first = formatDate(firstBuyDay)
       let d_last = formatDate(new Date())
 
       let responsePrice = JSON.parse(localStorage.getItem("stockPrices" + this.id))
@@ -468,10 +472,24 @@ export default {
         pricesByDate.push(responsePrice.data.data[responsePrice.data.data.length - 1].close);
         categoriesMenu.push(d_last)
       }
-      let buyPrice = this.info[this.id].buyPrice.toFixed(2)
+      
       this.seriesLineChart[0].data.push(0)
       for(let i = 1; i < pricesByDate.length; i++) {
-        let rent = (((pricesByDate[i] - buyPrice) / buyPrice) * 100).toFixed(2);
+        
+        for(let j = 0; j < this.infoTransactions.length; j++) {
+          if(this.infoTransactions[j].stockID === this.id) {
+              if(this.infoTransactions[j].date >= categoriesMenu[i]) {
+                let oldTotalQuantity = totalQuantity
+                totalQuantity += this.infoTransactions[j].quantity
+                if(buyPriceAtTheMoment === 0) buyPriceAtTheMoment = this.infoTransactions[j].buyPrice
+                else {
+                  buyPriceAtTheMoment = ((buyPriceAtTheMoment * oldTotalQuantity) + (this.infoTransactions[j].buyPrice * this.infoTransactions[j].quantity)) / totalQuantity
+                }
+              }
+          }
+        }
+
+        let rent = (((pricesByDate[i] - buyPriceAtTheMoment) / buyPriceAtTheMoment) * 100).toFixed(2);
         this.seriesLineChart[0].data.push(rent)
       }
 
