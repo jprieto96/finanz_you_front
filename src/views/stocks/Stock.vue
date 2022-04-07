@@ -2,6 +2,7 @@ h4
 <template>
   <div>
     <div class="container detailPage" v-if="showView">
+      <div class="title-container" id="centrarTitulo"><h1>Información del activo</h1></div>
       <a :href="infoStock.website" target="_blank">
         <div class="titleStock">
           <b-img
@@ -751,7 +752,7 @@ hr {
 }
 
 .linkNews {
-  color: blue;
+  color: rgba(54, 107, 157, 0.74);
 }
 
 .itemNews {

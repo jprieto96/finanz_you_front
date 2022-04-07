@@ -1,9 +1,7 @@
 <template>
-  <div id="perfil" v-if="showView">
-    <div id="head">
-      <h1>Mi perfil</h1>
-      <div class="card">
-        <div class="card-body">
+  <div id="perfil" class="centrarContenido" v-if="showView">
+      <div class="title-container"><h1>Mi perfil</h1></div>
+        <div id="editProfile">
           <p><b-row>
             <b-col class="card-text">DNI</b-col>
             <b-col class="card-result">{{ this.infoUser.dni }}</b-col>
@@ -28,19 +26,19 @@
           <p class="card-edit">
             <b-button :disabled="!enabledButton" v-if="editProfile" id="confirmEdit" variant="success" v-on:click="onSubmit">Confirmar cambios</b-button>
           </p>
+          <br>
           <p class="card-edit">
             <b-button v-if="editProfile===false" id="editUserData" variant="outline-secondary" v-on:click="editProfile=true"><b-icon icon="pencil-square"></b-icon></b-button>
             <b-button v-else id="noEditUserData" variant="outline-secondary" v-on:click="editProfile=false"><b-icon icon="pencil-square"></b-icon></b-button>
           </p>
         </div>
       </div>
-    </div>
-  </div>
 
 </template>
 
 <script>
 import axios from "axios";
+
 export default {
   name: "ClientProfile",
   data(){
@@ -158,11 +156,7 @@ export default {
 </script>
 
 <style scoped>
-
-.card{
-  width: 30%;
-  margin-left: 90px;
-}
+@import "../../css/generalStyle.css";
 
 .card-text{
   text-align: left;
@@ -174,6 +168,16 @@ export default {
 
 .card-result{
   text-align: right;
+}
+
+#editProfile{
+  width: 50%;
+}
+
+#editUserData, #noEditUserData{
+  background-color: white;
+  border-color: white;
+  color: rgba(54, 107, 157);
 }
 
 </style>

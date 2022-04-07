@@ -1,6 +1,6 @@
 <template>
-  <div class="main_container" v-if="showView">
-    <h1>Trending Stocks</h1>
+  <div class="centrarContenido" v-if="showView">
+    <div class="title-container"><h1>Trending Stocks</h1></div>
     <b-table-simple outlined responsive class="table">
       <b-thead class="thead-light">
       <b-tr>
@@ -89,13 +89,15 @@ export default {
   },
 
   created() {
+    this.getTrendingStocks()
+    /*
     if(this.$cookies.get("Session") == null) {
       this.getTrendingStocks()
     }
     else {
       window.location.href = '/client'
     }
-
+  */
   },
 
   methods: {
@@ -205,14 +207,15 @@ export default {
 </script>
 
 <style scoped>
+@import "../css/generalStyle.css";
 
 .main_container {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-evenly;
-
   padding: 50px;
 }
+
 
 td{
   vertical-align: middle;
