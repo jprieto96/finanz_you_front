@@ -178,6 +178,7 @@ export default {
       apiKey: process.env.VUE_APP_APIKEY,
       apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
       apiKeyForStockPrice: process.env.VUE_APP_APIKEY_FOR_STOCK_PRICE,
+      apiKeyForStockRatios: process.env.VUE_APP_APIKEY_FOR_STOCK_RATIOS,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       isLoading: true,
@@ -356,8 +357,25 @@ export default {
     this.getData();
     this.getPieChart();
     this.getLineChart();
+    this.getRatios();
   },
   methods: {
+    async getRatios() {
+      let stockRatios = JSON.parse(localStorage.getItem("stockRatios" + this.id))
+      if(stockRatios === null) {
+        let response = await axios.get(
+          "https://financialmodelingprep.com/api/v3/ratios-ttm/" +
+            this.id +
+            "?apikey=" +
+            this.apiKeyForStockRatios
+        );
+        stockRatios = response.data[0]
+        localStorage.setItem("stockRatios" + this.id, JSON.stringify(stockRatios))
+      }
+      
+      
+
+    },
     getPieChart() {
       let marketValueStockDetail = 0;
       if (
