@@ -97,6 +97,118 @@ h4
             </div>
           </div>
         </div>
+        <br>
+        <b-table-simple striped responsive v-if="showRatiosTable">
+          <b-thead>
+            <b-tr>
+              <b-th>
+                Ratio
+              </b-th>
+              <b-th>
+                Valor
+              </b-th>
+            </b-tr>
+          </b-thead>
+          <b-tbody>
+            <b-tr>
+              <b-td>
+                Rentabilidad por dividendo (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.dividendYielPercentageTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                Cash Ratio (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.cashRatioTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                Ratio de deuda (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.debtRatioTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                Ratio de flujo de fectivo operativo (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.freeCashFlowOperatingCashFlowRatioTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                PE Ratio
+              </b-td>
+              <b-td>
+                {{ stockRatios.peRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                PEG Ratio
+              </b-td>
+              <b-td>
+                {{ stockRatios.pegRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                Price to book Ratio
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceToBookRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                Price Cash Flow Ratio
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceCashFlowRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                PER Ratio
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceEarningsRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                Price to sales Ratio
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceSalesRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                ROA
+              </b-td>
+              <b-td>
+                {{ (stockRatios.returnOnAssetsTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                ROE
+              </b-td>
+              <b-td>
+                {{ (stockRatios.returnOnEquityTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+          </b-tbody>
+        </b-table-simple>
+        <br>
         <br />
         <hr v-if="this.news.length > 0" />
         <br />
@@ -186,12 +298,14 @@ export default {
       infoFinances: {},
       infoTransactions: {},
       infoStock: {},
+      stockRatios: {},
       infoRecommendationStock: {},
       id: this.$route.params.id,
       showView: false,
       showPieChart: false,
       showLineChart: false,
       showRecommendationGraph: false,
+      showRatiosTable: false,
       pieChartData: [],
       news: [],
       img: null,
@@ -361,20 +475,18 @@ export default {
   },
   methods: {
     async getRatios() {
-      let stockRatios = JSON.parse(localStorage.getItem("stockRatios" + this.id))
-      if(stockRatios === null) {
+      this.stockRatios = JSON.parse(localStorage.getItem("stockRatios" + this.id))
+      if(this.stockRatios === null) {
         let response = await axios.get(
           "https://financialmodelingprep.com/api/v3/ratios-ttm/" +
             this.id +
             "?apikey=" +
             this.apiKeyForStockRatios
         );
-        stockRatios = response.data[0]
-        localStorage.setItem("stockRatios" + this.id, JSON.stringify(stockRatios))
+        this.stockRatios = response.data[0]
+        localStorage.setItem("stockRatios" + this.id, JSON.stringify(this.stockRatios))
       }
-      
-      
-
+      this.showRatiosTable = true
     },
     getPieChart() {
       let marketValueStockDetail = 0;
