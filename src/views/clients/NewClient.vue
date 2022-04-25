@@ -46,7 +46,7 @@
           id="input-group-password"
           label="Contraseña"
           label-for="input-password"
-          description="min. 8 caracteres, al menos 1 letra y 1 número"
+          description="minimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 número"
           label-cols-sm="4"
           label-cols-lg="3"
           content-cols-sm
@@ -125,7 +125,7 @@ export default {
     },
     passwordValidator() {
       if (this.form.password == '') return null
-      return /^(?=\w*\d)(?=\w*[a-z])\S{8,}$/.test(this.form.password) && this.form.password.length >= 8;
+      return /^(?=\w*\d)(?=\w*[a-z])(?=\w*[A-Z])\S{8,}$/.test(this.form.password) && this.form.password.length >= 8;
     },
     dniValidator() {
       if (this.form.dni == '') return null
