@@ -26,7 +26,7 @@
           id="input-group-password"
           label="Contraseña"
           label-for="input-password"
-          description="min. 8 caracteres, al menos 1 letra y 1 número"
+          description="minimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 número"
           label-cols-sm="4"
           label-cols-lg="3"
           content-cols-sm
@@ -44,7 +44,7 @@
         ></b-form-input>
       </b-form-group>
 
-      <div id="buttons" class="d-flex justify-content-between">
+      <div id="buttons" class="d-flex justify-content-center">
         <b-button :disabled="!enabledButton" class="button-success" type="submit" variant="primary">Iniciar Sesión</b-button>
         <b-button class="button-cancel" type="reset" variant="danger">Cancelar</b-button>
       </div>
@@ -108,7 +108,7 @@ export default {
     },
     passwordValidator() {
       if (this.form.password == '') return null
-      return /^(?=\w*\d)(?=\w*[a-z])\S{8,}$/.test(this.form.password) && this.form.password.length >= 8;
+      return /^(?=\w*\d)(?=\w*[a-z])(?=\w*[A-Z])\S{8,}$/.test(this.form.password) && this.form.password.length >= 8;
     }
   },
   methods: {
