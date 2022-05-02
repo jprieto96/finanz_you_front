@@ -168,7 +168,32 @@ export default Vue.extend({
             color:  '#5d6262'
           },
         },
-        colors: ['#222b64'],
+        colors: ["#77B6EA", "#545454"],
+        dataLabels: {
+          enabled: true,
+          formatter: function (val) {
+            if(val !== 0) {
+              return (val * 100).toFixed(2) + ' %';
+            }
+          },
+          background: {
+            enabled: true,
+            foreColor: '#fff',
+            padding: 4,
+            borderRadius: 2,
+            borderWidth: 1,
+            borderColor: '#fff',
+            opacity: 0.9,
+            dropShadow: {
+              enabled: false,
+              top: 1,
+              left: 1,
+              blur: 1,
+              color: '#000',
+              opacity: 0.45
+            }
+          },
+        },
       },
       series: [],
     }
