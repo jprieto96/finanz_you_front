@@ -168,7 +168,32 @@ export default Vue.extend({
             color:  '#5d6262'
           },
         },
-        colors: ['#222b64'],
+        colors: ["#77B6EA", "#545454"],
+        dataLabels: {
+          enabled: true,
+          formatter: function (val) {
+            if(val !== 0) {
+              return (val * 100).toFixed(2) + ' %';
+            }
+          },
+          background: {
+            enabled: true,
+            foreColor: '#fff',
+            padding: 4,
+            borderRadius: 2,
+            borderWidth: 1,
+            borderColor: '#fff',
+            opacity: 0.9,
+            dropShadow: {
+              enabled: false,
+              top: 1,
+              left: 1,
+              blur: 1,
+              color: '#000',
+              opacity: 0.45
+            }
+          },
+        },
       },
       series: [],
     }
@@ -196,7 +221,7 @@ export default Vue.extend({
           longerStock = stock;
         }
       }
-      for (let stamp = 0; stamp < size; stamp++) {//Por cada timestamp recorrerá los valores
+      for (let stamp = 0; stamp <= size; stamp++) {//Por cada timestamp recorrerá los valores
         let rentabilidad = 0;
         let gyp = 0;
         let inversionTotal = 0;
@@ -208,14 +233,26 @@ export default Vue.extend({
             const indice = infoStock.timestamp.length - (size - stamp); //El indice es
             if(indice >= 0) { //Si una acción solo tiene 5 timestamps no incluirlo al principio
               const fecha = new Date(stock.date).getTime() / 1000; // Obtener la fecha en EPOCH
-              if (fecha <= infoStock.timestamp[indice]) { //Si la fecha de compra es anterior al timestamp incluirla
+              let timeStmp
+              if(stamp === size){
+                timeStmp = Date.now() / 1000
+              }
+              else{
+                timeStmp = infoStock.timestamp[indice]
+              }
+              if (fecha <= timeStmp) { //Si la fecha de compra es anterior al timestamp incluirla
                 let change = 1;
                 if (stock.currency !== 'EUR'){
                   change = this.convertToEuros(stock.currency);
                 }
 
                 inversionTotal += (change * stock.buyPrice) * stock.quantity; //En esta variable acumulamos el valor total de un timestamp
-                gyp += (change * infoStock.close[indice] - stock.buyPrice * change) * stock.quantity //Acumulamos las PyG de un TimeStamp
+                if(indice > 0) { //La API da el valor de cierre de un timestamp en close - 1
+                  gyp += (change * infoStock.close[indice - 1] - stock.buyPrice * change) * stock.quantity //Acumulamos las PyG de un TimeStamp
+                }
+                else{
+                  gyp += (change * infoStock.chartPreviousClose - stock.buyPrice * change) * stock.quantity //Acumulamos las PyG de un TimeStamp
+                }
               }
             }
           }
@@ -225,7 +262,14 @@ export default Vue.extend({
           rentabilidad = gyp / inversionTotal;
         }
 
-        this.profitTimeStamp.set(longerStock.timestamp[stamp], rentabilidad);
+        let timeStamp
+        if(stamp === size){
+          timeStamp = (Date.now() / 1000).toFixed(0)
+        }
+        else{
+          timeStamp = longerStock.timestamp[stamp]
+        }
+        this.profitTimeStamp.set(timeStamp, rentabilidad);
       }
       this.paintChart();
     },
