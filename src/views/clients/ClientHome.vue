@@ -196,6 +196,7 @@ export default Vue.extend({
         },
       },
       series: [],
+      backup_converter : 0.94,
     }
   },
   provide: {
@@ -445,29 +446,32 @@ export default Vue.extend({
       this.totalProfit = this.earnsAndLoses/capitalInvestment;
     },
     convertToEuros(currency){
-
+      if(currency === 'EUR'){
+        return 1;
+      }
       let change = localStorage.getItem(currency);
-
+      if(change == 0) {change = this.backup_converter;}
       if(change == null) {
 
-        var options = {
+        const options = {
           method: 'GET',
-          url: 'https://currency-exchange.p.rapidapi.com/exchange',
-          params: {from: currency, to: 'EUR', q: '1.0'},
+          url: 'https://currency-conversion-and-exchange-rates.p.rapidapi.com/convert',
+          params: {from: currency, to: 'EUR', amount: '1'},
           headers: {
-            'x-rapidapi-host': 'currency-exchange.p.rapidapi.com',
-            'x-rapidapi-key': '7f8e0f06aemsh10389b0e8277836p1c4e11jsna2dbb7767fc7' //TODO Change this key
+            'X-RapidAPI-Host': 'currency-conversion-and-exchange-rates.p.rapidapi.com',
+            'X-RapidAPI-Key': '7f8e0f06aemsh10389b0e8277836p1c4e11jsna2dbb7767fc7'
           }
         };
 
         axios.request(options).then(function (response) {
-          localStorage.setItem(currency, response.data);
-          return response.data;
+          localStorage.setItem(currency, response.data.result);
+          return response.data.result;
         }).catch(function (error) {
           this.showWarningModal(error);
+          return this.backup_converter;
         });
 
-        return 1;
+        return this.backup_converter;
       }
       else {
         return change;
