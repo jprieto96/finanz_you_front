@@ -29,7 +29,7 @@
         <b-td v-if="item.currency === 'USD'">{{ item.buyPrice.toFixed(2) + " $" }}</b-td>
         <b-td v-else-if="item.currency === 'EUR'">{{ item.buyPrice.toFixed(2) + " €" }}</b-td>
         <b-td>{{ getDate(item.date) }}</b-td>
-        <b-td v-if="deleteOption"><b-form-checkbox id="checkBox" v-model="checked" v-bind:value="item" name="checkbox-button"></b-form-checkbox></b-td>
+        <b-td v-if="deleteOption"><b-form-radio v-model="checked" v-bind:value="item" name="checkbox-button"></b-form-radio></b-td>
       </b-tr>
       </b-tbody>
     </b-table-simple>
