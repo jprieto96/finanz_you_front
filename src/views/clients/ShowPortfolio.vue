@@ -147,9 +147,9 @@
         <b-td v-else-if="gyp[index] === 0">{{ gyp[index].toFixed(2) + " €"}}</b-td>
         <b-td class="gypred" v-else>{{ gyp[index].toFixed(2) + " €"}}</b-td>
         <!--% total-->
-        <b-td class="gypgreen" v-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) > 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
-        <b-td v-else-if="(((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100) === 0">{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
-        <b-td class="gypred" v-else>{{ (((infoFinances[index].quoteResponse.result[0].regularMarketPrice - item.buyPrice) / item.buyPrice) * 100).toFixed(2)}}%</b-td>
+        <b-td class="gypgreen" v-if="((gyp[index].toFixed(2) / item.buyPrice) * 100) > 0">{{ ((gyp[index].toFixed(2) / (item.buyPrice * convertToEuros(infoFinances[index].quoteResponse.result[0].currency) * item.quantity)) * 100).toFixed(2)}}%</b-td>
+        <b-td v-else-if="((gyp[index].toFixed(2) / item.buyPrice) * 100) === 0">{{ ((gyp[index].toFixed(2) / (item.buyPrice * convertToEuros(infoFinances[index].quoteResponse.result[0].currency) * item.quantity)) * 100).toFixed(2)}}%</b-td>
+        <b-td class="gypred" v-else>{{ ((gyp[index].toFixed(2) / (item.buyPrice * convertToEuros(infoFinances[index].quoteResponse.result[0].currency) * item.quantity)) * 100).toFixed(2)}}%</b-td>
       </b-tr>
       </b-tbody>
     </b-table-simple>

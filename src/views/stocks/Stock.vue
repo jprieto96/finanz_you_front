@@ -97,6 +97,142 @@ h4
             </div>
           </div>
         </div>
+        <br>
+        <b-table-simple striped responsive v-if="showRatiosTable">
+          <b-thead>
+            <b-tr>
+              <b-th>
+                Ratio
+              </b-th>
+              <b-th>
+                Valor
+              </b-th>
+            </b-tr>
+          </b-thead>
+          <b-tbody>
+            <b-tr>
+              <b-td>
+                <b-icon id="dividendYield" icon="info-circle"></b-icon>
+                <b-tooltip target="dividendYield" triggers="hover" positioning="bottom" variant="primary">
+                  La rentabilidad por dividendo nos indica qué cantidad de la inversión podemos recuperar únicamente con el reparto de dividendos de la compañía.
+                </b-tooltip>
+                Rentabilidad por dividendo (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.dividendYielPercentageTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="cashRatio" icon="info-circle"></b-icon>
+                <b-tooltip target="cashRatio" triggers="hover" positioning="bottom" variant="primary">
+                  Mide la capacidad de la empresa para hacer frente rápidamente a sus obligaciones en el corto plazo. Esto, sin la necesidad de vender ningún activo.
+                </b-tooltip>
+                Ratio de caja (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.cashRatioTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="debtRatio" icon="info-circle"></b-icon>
+                <b-tooltip target="debtRatio" triggers="hover" positioning="bottom" variant="primary">
+                  Se utiliza para determinar qué parte de los activos de una empresa se financia mediante deuda
+                </b-tooltip>
+                Ratio de deuda (%)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.debtRatioTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="pegRatio" icon="info-circle"></b-icon>
+                <b-tooltip target="pegRatio" triggers="hover" positioning="bottom" variant="primary">
+                  Compara el precio de cotización de la acción, con respecto a los beneficios de la empresa, Un PEG alto (mayor que 1) implica sobrevaloración del título y un PEG bajo (menor que 1) infravaloración del título
+                </b-tooltip>
+                PEG Ratio (Cotización-Beneficios)
+              </b-td>
+              <b-td>
+                {{ stockRatios.pegRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="ptbRatio" icon="info-circle"></b-icon>
+                <b-tooltip target="ptbRatio" triggers="hover" positioning="bottom" variant="primary">
+                  Es el precio de las acciones de una empresa dividido por el valor en libros por acción de dicha empresa. Refleja cuánto están los inversores dispuestos a pagar por los activos de una empresa en relación al valor contable de dichos activos
+                </b-tooltip>
+                Price to book Ratio (Precio-Valor en libros)
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceToBookRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="priceCFR" icon="info-circle"></b-icon>
+                <b-tooltip target="priceCFR" triggers="hover" positioning="bottom" variant="primary">
+                  Mide el valor del precio de una acción en relación con su flujo de caja operativo por acción
+                </b-tooltip>
+                Ratio Precio-Flujo de caja
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceCashFlowRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="PER" icon="info-circle"></b-icon>
+                <b-tooltip target="PER" triggers="hover" positioning="bottom" variant="primary">
+                  Expresa la valoración que realiza el mercado sobre la capacidad de generación de beneficios de la empresa, cómo  el número de veces que está contenido el beneficio por acción en el precio de mercado de la misma.
+                </b-tooltip>
+                PER (Precio/a-Beneficio/a)
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceEarningsRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="salesRatio" icon="info-circle"></b-icon>
+                <b-tooltip target="salesRatio" triggers="hover" positioning="bottom" variant="primary">
+                  Compara el precio de las acciones de una empresa con sus ingresos. Es un indicador del valor que los mercados financieros han asignado a cada dólar de ventas o ingresos de una empresa.
+                </b-tooltip>
+                Ratio Precio/Ventas
+              </b-td>
+              <b-td>
+                {{ stockRatios.priceSalesRatioTTM.toFixed(2) }}
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="ROA" icon="info-circle"></b-icon>
+                <b-tooltip target="ROA" triggers="hover" positioning="bottom" variant="primary">
+                  Mide la rentabilidad del total de activos de la empresa. Se calcula como el cociente entre el beneficio y el activo total.
+                </b-tooltip>
+                ROA (Retorno sobre los activos)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.returnOnAssetsTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+            <b-tr>
+              <b-td>
+                <b-icon id="ROE" icon="info-circle"></b-icon>
+                <b-tooltip target="ROE" triggers="hover" positioning="bottom" variant="primary">
+                  Mide la rentabilidad de una empresa. Se calcula dividiendo el beneficio neto obtenido por dicha compañía en relación a sus fondos propios.
+                </b-tooltip>
+                ROE (Retorno sobre los accionistas)
+              </b-td>
+              <b-td>
+                {{ (stockRatios.returnOnEquityTTM * 100).toFixed(2) }}%
+              </b-td>
+            </b-tr>
+          </b-tbody>
+        </b-table-simple>
+        <br>
         <br />
         <hr v-if="this.news.length > 0" />
         <br />
@@ -178,6 +314,7 @@ export default {
       apiKey: process.env.VUE_APP_APIKEY,
       apiKeyForImage: process.env.VUE_APP_APIKEY_FOR_STOCK_INFO,
       apiKeyForStockPrice: process.env.VUE_APP_APIKEY_FOR_STOCK_PRICE,
+      apiKeyForStockRatios: process.env.VUE_APP_APIKEY_FOR_STOCK_RATIOS,
       backURL: process.env.VUE_APP_BACK_URL,
       errorMSG: process.env.VUE_APP_ERROR_MSG,
       isLoading: true,
@@ -185,12 +322,14 @@ export default {
       infoFinances: {},
       infoTransactions: {},
       infoStock: {},
+      stockRatios: {},
       infoRecommendationStock: {},
       id: this.$route.params.id,
       showView: false,
       showPieChart: false,
       showLineChart: false,
       showRecommendationGraph: false,
+      showRatiosTable: false,
       pieChartData: [],
       news: [],
       img: null,
@@ -356,8 +495,23 @@ export default {
     this.getData();
     this.getPieChart();
     this.getLineChart();
+    this.getRatios();
   },
   methods: {
+    async getRatios() {
+      this.stockRatios = JSON.parse(localStorage.getItem("stockRatios" + this.id))
+      if(this.stockRatios === null) {
+        let response = await axios.get(
+          "https://financialmodelingprep.com/api/v3/ratios-ttm/" +
+            this.id +
+            "?apikey=" +
+            this.apiKeyForStockRatios
+        );
+        this.stockRatios = response.data[0]
+        localStorage.setItem("stockRatios" + this.id, JSON.stringify(this.stockRatios))
+      }
+      this.showRatiosTable = true
+    },
     getPieChart() {
       let marketValueStockDetail = 0;
       if (
