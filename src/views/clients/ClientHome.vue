@@ -196,6 +196,7 @@ export default Vue.extend({
         },
       },
       series: [],
+      backup_converter : 0.94,
     }
   },
   provide: {
@@ -449,7 +450,7 @@ export default Vue.extend({
         return 1;
       }
       let change = localStorage.getItem(currency);
-      if(change == 0) {change = 0.94;}
+      if(change == 0) {change = this.backup_converter;}
       if(change == null) {
 
         const options = {
@@ -467,9 +468,10 @@ export default Vue.extend({
           return response.data.result;
         }).catch(function (error) {
           this.showWarningModal(error);
+          return this.backup_converter;
         });
 
-        return 0.94;
+        return this.backup_converter;
       }
       else {
         return change;
