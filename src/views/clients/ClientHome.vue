@@ -603,8 +603,10 @@ export default Vue.extend({
 }
 
 .graficos_horizontal{
-  margin-top: 20px;
+  margin-top: 35px;
   display: flex;
+  aling-items: center;
+  justify-content: center;
 }
 
 .grafico_rentabilidad{

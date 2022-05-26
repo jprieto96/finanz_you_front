@@ -600,7 +600,7 @@ export default {
 
       let responsePrice = JSON.parse(localStorage.getItem("stockPrices" + this.id))
       if(responsePrice === null) {
-        responsePrice = await axios.get("http://api.marketstack.com/v1/eod?access_key=" + this.apiKeyForStockPrice + "&symbols=" + this.id + "&date_from=" + d_first + "&date_to=" + d_last);
+        responsePrice = await axios.get("https://api.marketstack.com/v1/eod?access_key=" + this.apiKeyForStockPrice + "&symbols=" + this.id + "&date_from=" + d_first + "&date_to=" + d_last);
         localStorage.setItem("stockPrices" + this.id, JSON.stringify(responsePrice))
       }
 
